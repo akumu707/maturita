@@ -64,11 +64,18 @@ class Parser:
         if self._accept("IF"):
             return Command(CommandT.If, l=self._bool_expression(), r=self._block())
         if self._accept("DO"):
-            return Command(CommandT.Do, r=self._get_next_token().value)
+            return Command(CommandT.Do, l=self._get_next_token().value, r=self._params())
         l = self._object()
         if self._expect(":"):
             r = self._bool_expression()
             return Command(CommandT.Assign, r, l)
+
+    def _params(self):
+        result = []
+        if self._expect("["):
+            while not self._accept("]"):
+                result.append(self._object())
+        return result
 
     def _bool_expression(self):
         l = self._expression()

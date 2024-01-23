@@ -28,7 +28,9 @@ class Lexer(object):
         "LOWER",
         "TEXT",
         "ASSIGN",
-        "QUOMARK"
+        "QUOMARK",
+        'LSQPAREN',
+        "RSQPAREN"
     ] + list(reserved)
 
 
@@ -46,6 +48,8 @@ class Lexer(object):
     t_EQUAL = r'\='
     t_ASSIGN = r'\:'
     t_QUOMARK = r'"'
+    t_LSQPAREN = r'\['
+    t_RSQPAREN = r'\]'
 
     # A regular expression rule with some action code
     # Note addition of self parameter since we're in a class

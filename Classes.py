@@ -118,7 +118,7 @@ class Command:
         if self.type == CommandT.Read:
             return f"READ {self.right}\n"
         if self.type == CommandT.Do:
-            return f"DO {self.right}\n"
+            return f"DO {self.left} {self.right}\n"
         result = f"IF {self.left} " + "{\n"
         for command in self.right:
             result += f"\t{command}"
