@@ -46,14 +46,16 @@ class Parser:
             if self._expect("BLOCK"):
                 key = self._get_next_token().value
                 block = self._block()
-                program[key] = Block(name=key, commands = block)
+                program[key] = Block(name=key, commands = block["commands"], params = block["params"])
         return Program(program)
 
     def _block(self):
-        result = []
+        result = {}
+        result["params"] = self._params()
+        result["commands"] = []
         if self._expect("{"):
             while not self._accept("}"):
-                result.append(self._command())
+                result["commands"].append(self._command())
         return result
 
     def _command(self):

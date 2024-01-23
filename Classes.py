@@ -159,8 +159,9 @@ class Command:
 
 
 class Block:
-    def __init__(self, name, commands):
+    def __init__(self, name, params, commands):
         self.name = name
+        self.params = params
         self.commands = commands
 
     def __str__(self):
