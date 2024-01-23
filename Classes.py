@@ -118,7 +118,11 @@ class Command:
         if self.type == CommandT.Read:
             return f"READ {self.right}\n"
         if self.type == CommandT.Do:
-            return f"DO {self.left} {self.right}\n"
+            result = f"DO {self.left} ["
+            for p in self.right:
+                result += f"{p}"
+            result += "]"
+            return result
         result = f"IF {self.left} " + "{\n"
         for command in self.right:
             result += f"\t{command}"
@@ -147,7 +151,7 @@ class Command:
                 return variable_map
             raise Exception("Trying to assign string to a variable")
         if self.type == CommandT.Do:
-            return self.right
+            return self.left
         if self.type == CommandT.If:
             if type(self.left.eval(variable_map)) == bool:
                 if self.left.eval(variable_map):
@@ -165,7 +169,10 @@ class Block:
         self.commands = commands
 
     def __str__(self):
-        result = f"BLOCK {self.name} " + "{\n"
+        result = f"BLOCK {self.name} ["
+        for p in self.params:
+            result += f"{p}"
+        result+= "] {\n"
         for command in self.commands:
             result += f"\t{command}"
         return result + "}"
