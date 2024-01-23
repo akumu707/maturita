@@ -151,7 +151,7 @@ class Command:
                 return variable_map
             raise Exception("Trying to assign string to a variable")
         if self.type == CommandT.Do:
-            return self.left
+            return self.left, self.right
         if self.type == CommandT.If:
             if type(self.left.eval(variable_map)) == bool:
                 if self.left.eval(variable_map):
@@ -176,6 +176,12 @@ class Block:
         for command in self.commands:
             result += f"\t{command}"
         return result + "}"
+
+    def get_new_variable_map(self, param_values):
+        var_map = {}
+        for i in range(len(param_values)):
+            var_map[self.params[i].value] = param_values[i]
+        return var_map
 
     def eval(self, variable_map):
         for command in self.commands:
@@ -205,9 +211,9 @@ class Program:
             variable_map["main"] = {}
             result = self.parts["main"].eval(variable_map["main"])
             while result is not None:
-                if result in self.parts:
-                    variable_map[result] = {}
-                    result = self.parts[result].eval(variable_map[result])
+                if result[0] in self.parts:
+                    variable_map[result[0]] = self.parts[result[0]].get_new_variable_map(result[1])
+                    result = self.parts[result[0]].eval(variable_map[result[0]])
                 else:
                     raise Exception("No block named "+result+" in code")
         else:
