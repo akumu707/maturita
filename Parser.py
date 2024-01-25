@@ -163,9 +163,9 @@ class Parser:
             return SimpleObj(BasicObjT.Var, current.value)
 
 
-
-P = Parser("test.txt")
-parsed = P.parse()
-print(parsed)
-print("-----------------")
-parsed.eval()
+if __name__ == '__main__':
+    P = Parser("test.txt")
+    parsed = P.parse()
+    print(parsed)
+    print("-----------------")
+    parsed.eval()
