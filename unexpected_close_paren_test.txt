@@ -1,0 +1,4 @@
+BLOCK main {x : 2*(x+()
+WRITE x DO hi}
+BLOCK hi {x:1WRITE x}
+        

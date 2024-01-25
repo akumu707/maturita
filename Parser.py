@@ -105,8 +105,8 @@ class Parser:
             next_char = self._term()
             if next_char is None:
                 if op is None:
-                    self._raise_exception(f"Expected expression", self.tokens[self.next_token])
-                self._raise_exception(f"Expected value or expression after {op}", self.tokens[self.next_token])
+                    self._raise_exception(f"Expected expression", self.tokens[self.next_token-1])
+                self._raise_exception(f"Expected value or expression after {op}", self.tokens[self.next_token-1])
             result.append((next_char, op))
             if self._accept("+"):
                 op = "+"
@@ -126,7 +126,7 @@ class Parser:
             if next_char is None:
                 if op is None:
                     return None
-                self._raise_exception(f"Expected value or expression after {op}", self.tokens[self.next_token])
+                self._raise_exception(f"Expected value or expression after {op}", self.tokens[self.next_token-1])
             result.append((next_char, op))
             if self._accept("/"):
                 op = "/"
