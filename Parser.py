@@ -4,14 +4,11 @@ import ply.lex as lex
 
 class Parser:
 
-    def __init__(self, code_file):
+    def __init__(self):
         self.code = ""
-        with open(code_file) as file:
-            for line in file:
-                self.code += line
         self.lexer = Lexer()
         self.lexer.build()
-        self.tokens = self.lexer.run(self.code)
+        self.tokens = []
         self.next_token = 0
 
     def _raise_exception(self, msg, token):
@@ -40,7 +37,8 @@ class Parser:
         self.next_token += 1
         return current
 
-    def parse(self):
+    def parse(self, code):
+        self.tokens = self.lexer.run(code)
         program = {}
         while self.next_token < len(self.tokens):
             if self._expect("BLOCK"):
@@ -164,7 +162,7 @@ class Parser:
 
 
 if __name__ == '__main__':
-    P = Parser("test.txt")
+    P = Parser()
     parsed = P.parse()
     print(parsed)
     print("-----------------")
