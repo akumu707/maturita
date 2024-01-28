@@ -2,6 +2,8 @@ import unittest
 
 from Parser import Parser
 from Classes import *
+import sys
+from io import StringIO
 #"BLOCK main {READ x; x:= x+6; DO [x > x - 2] other; GIVE x} BLOCK other {y := 9*x + 56; GIVE y} BLOCK otter {DO [x + 3 < 5 *4] other}"
 
 
@@ -231,6 +233,19 @@ BLOCK hi [] {x:1WRITE x}
         """)
 
         self.assertTrue("Expected value " in str(exc.exception))
+
+    def test_blocks_with_params(self):
+        parser = Parser()
+        parsed = parser.parse("""BLOCK main [] {
+        DO hi [5]}
+        BLOCK hi [x] {WRITE x}
+                """)
+        capturedOutput = StringIO()  # Make StringIO.
+        sys.stdout = capturedOutput  # Redirect stdout.
+        parsed.eval()  # Call function.
+        sys.stdout = sys.__stdout__  # Reset redirect.
+        self.assertEqual(int(capturedOutput.getvalue()), 5, "Should be 5")
+
 
 
 if __name__ == '__main__':
