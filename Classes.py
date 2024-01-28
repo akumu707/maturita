@@ -177,10 +177,13 @@ class Block:
             result += f"\t{command}"
         return result + "}"
 
-    def get_new_variable_map(self, param_values):
+    def get_new_variable_map(self, param_values, variable_map):
         var_map = {}
         for i in range(len(param_values)):
-            var_map[self.params[i].value] = param_values[i]
+            if param_values[i].type == BasicObjT.Var:
+                var_map[self.params[i].value] = variable_map[param_values[i].value]
+            else:
+                var_map[self.params[i].value] = param_values[i]
         return var_map
 
     def eval(self, variable_map):
@@ -189,7 +192,7 @@ class Block:
             if type(result) == dict:
                 variable_map = result
             else:
-                return result
+                return {"block": result[0], "param_values": result[1], "variable_map": variable_map}
 
 
 class Program:
@@ -211,9 +214,10 @@ class Program:
             variable_map["main"] = {}
             result = self.parts["main"].eval(variable_map["main"])
             while result is not None:
-                if result[0] in self.parts:
-                    variable_map[result[0]] = self.parts[result[0]].get_new_variable_map(result[1])
-                    result = self.parts[result[0]].eval(variable_map[result[0]])
+                if result["block"] in self.parts:
+                    variable_map[result["block"]] = self.parts[result["block"]].get_new_variable_map(
+                        result["param_values"], result["variable_map"])
+                    result = self.parts[result["block"]].eval(variable_map[result["block"]])
                 else:
                     raise Exception("No block named "+result+" in code")
         else:

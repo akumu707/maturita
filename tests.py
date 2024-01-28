@@ -246,6 +246,20 @@ BLOCK hi [] {x:1WRITE x}
         sys.stdout = sys.__stdout__  # Reset redirect.
         self.assertEqual(int(capturedOutput.getvalue()), 5, "Should be 5")
 
+    def test_blocks_with_var_params(self):
+        parser = Parser()
+        parsed = parser.parse("""BLOCK main [] {
+        x : 2
+        DO hi [x]}
+        BLOCK hi [x] {WRITE x}
+                """)
+
+        capturedOutput = StringIO()  # Make StringIO.
+        sys.stdout = capturedOutput  # Redirect stdout.
+        parsed.eval()  # Call function.
+        sys.stdout = sys.__stdout__  # Reset redirect.
+        self.assertEqual(int(capturedOutput.getvalue()), 2, "Should be 2")
+
 
 
 if __name__ == '__main__':
