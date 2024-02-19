@@ -4,14 +4,13 @@ from Parser import Parser
 from Classes import *
 import sys
 from io import StringIO
-#"BLOCK main {READ x; x:= x+6; DO [x > x - 2] other; GIVE x} BLOCK other {y := 9*x + 56; GIVE y} BLOCK otter {DO [x + 3 < 5 *4] other}"
 
 
 class ParserTests(unittest.TestCase):
     def test_sum_tuple(self):
         self.assertEqual(sum((2, 2, 2)), 6, "Should be 6")
 
-    #Program tests
+    # Program tests
 
     def test_program_return(self):
         parser = Parser()
@@ -25,7 +24,7 @@ class ParserTests(unittest.TestCase):
 
         self.assertTrue(type(parsed.parts) is dict)
 
-    #BLOCK tests:
+    # BLOCK tests:
 
     def test_block_params(self):
         parser = Parser()
@@ -74,8 +73,7 @@ class ParserTests(unittest.TestCase):
         parser.set_tokens("WRITE ")
 
         with self.assertRaises(Exception) as exc:
-            parsed = parser._command()
-
+            parser._command()
 
         self.assertTrue("Expected" in str(exc.exception))
 
@@ -101,7 +99,7 @@ class ParserTests(unittest.TestCase):
         parser.set_tokens("READ WRITE x")
 
         with self.assertRaises(Exception) as exc:
-            parsed = parser._command()
+            parser._command()
 
         self.assertTrue("Expected" in str(exc.exception))
 
@@ -113,7 +111,7 @@ class ParserTests(unittest.TestCase):
 
         self.assertTrue(parsed.type is CommandT.Read)
 
-    #DO tests
+    # DO tests
     def test_do_return_type(self):
         parser = Parser()
         parser.set_tokens("DO x []")
@@ -134,7 +132,7 @@ class ParserTests(unittest.TestCase):
         parser.set_tokens("DO x")
 
         with self.assertRaises(Exception) as exc:
-            parsed = parser._command()
+            parser._command()
 
         self.assertTrue("Out" in str(exc.exception))
 
@@ -143,11 +141,11 @@ class ParserTests(unittest.TestCase):
         parser.set_tokens("DO []")
 
         with self.assertRaises(Exception) as exc:
-            parsed = parser._command()
+            parser._command()
 
         self.assertTrue("Expected" in str(exc.exception))
 
-    #IF tests
+    # IF tests
     def test_if_return_type(self):
         parser = Parser()
         parser.set_tokens("IF x {}")
@@ -184,7 +182,7 @@ class ParserTests(unittest.TestCase):
         parser.set_tokens("IF {}")
 
         with self.assertRaises(Exception) as exc:
-            parsed = parser._command()
+            parser._command()
 
         self.assertTrue("Expected value type, got LCOMPPAREN instead" in str(exc.exception))
 
@@ -193,11 +191,11 @@ class ParserTests(unittest.TestCase):
         parser.set_tokens("IF x")
 
         with self.assertRaises(Exception) as exc:
-            parsed = parser._command()
+            parser._command()
 
         self.assertTrue("Out" in str(exc.exception))
 
-    #WHILE tests
+    # WHILE tests
     def test_while_return_type(self):
         parser = Parser()
         parser.set_tokens("WHILE x {}")
@@ -234,7 +232,7 @@ class ParserTests(unittest.TestCase):
         parser.set_tokens("WHILE {}")
 
         with self.assertRaises(Exception) as exc:
-            parsed = parser._command()
+            parser._command()
 
         self.assertTrue("Expected value type, got LCOMPPAREN instead" in str(exc.exception))
 
@@ -243,7 +241,7 @@ class ParserTests(unittest.TestCase):
         parser.set_tokens("WHILE x")
 
         with self.assertRaises(Exception) as exc:
-            parsed = parser._command()
+            parser._command()
 
         self.assertTrue("Out" in str(exc.exception))
 
@@ -284,7 +282,7 @@ class ParserTests(unittest.TestCase):
         parser.set_tokens("x:")
 
         with self.assertRaises(Exception) as exc:
-            parsed = parser._command()
+            parser._command()
 
         self.assertTrue("Expected expression" in str(exc.exception))
 
@@ -295,7 +293,6 @@ class ParserTests(unittest.TestCase):
         parsed = parser._command()
 
         self.assertTrue(parsed.type is CommandT.Assign)
-
 
     def test_unexpected_close_paren(self):
         parser = Parser()
@@ -314,12 +311,12 @@ BLOCK hi [] {x:1WRITE x}
         DO hi [5]}
         BLOCK hi [x] {WRITE x}
                 """)
-        capturedOutput = StringIO()  # Make StringIO.
+        captured_output = StringIO()  # Make StringIO.
         old_stdout = sys.stdout
-        sys.stdout = capturedOutput
+        sys.stdout = captured_output
         parsed.eval()  # Call function.
         sys.stdout = old_stdout  # Reset redirect to original instance
-        self.assertEqual(int(capturedOutput.getvalue()), 5, "Should be 5")
+        self.assertEqual(int(captured_output.getvalue()), 5, "Should be 5")
 
     def test_blocks_with_var_params(self):
         parser = Parser()
@@ -329,14 +326,12 @@ BLOCK hi [] {x:1WRITE x}
         BLOCK hi [x] {WRITE x}
                 """)
 
-        capturedOutput = StringIO()  # Make StringIO.
+        captured_output = StringIO()  # Make StringIO.
         old_stdout = sys.stdout
-        sys.stdout = capturedOutput  # Redirect stdout.
+        sys.stdout = captured_output  # Redirect stdout.
         parsed.eval()
         sys.stdout = old_stdout  # Reset redirect to original instance
-        self.assertEqual(int(capturedOutput.getvalue()), 2, "Should be 2")
-
-
+        self.assertEqual(int(captured_output.getvalue()), 2, "Should be 2")
 
 
 if __name__ == '__main__':
