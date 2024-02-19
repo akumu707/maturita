@@ -197,6 +197,56 @@ class ParserTests(unittest.TestCase):
 
         self.assertTrue("Out" in str(exc.exception))
 
+    #WHILE tests
+    def test_while_return_type(self):
+        parser = Parser()
+        parser.set_tokens("WHILE x {}")
+        parsed = parser._command()
+
+        self.assertTrue(type(parsed) is Command)
+
+    def test_while_type(self):
+        parser = Parser()
+        parser.set_tokens("WHILE x {}")
+
+        parsed = parser._command()
+
+        self.assertTrue(parsed.type is CommandT.While)
+
+    def test_while_block_type(self):
+        parser = Parser()
+        parser.set_tokens("WHILE x {}")
+
+        parsed = parser._command()
+
+        self.assertTrue(type(parsed.right) is list)
+
+    def test_while_block_command(self):
+        parser = Parser()
+        parser.set_tokens("WHILE x {WRITE x}")
+
+        parsed = parser._command()
+
+        self.assertTrue(len(parsed.right) == 1 and type(parsed.right[0]) is Command)
+
+    def test_while_bool_param(self):
+        parser = Parser()
+        parser.set_tokens("WHILE {}")
+
+        with self.assertRaises(Exception) as exc:
+            parsed = parser._command()
+
+        self.assertTrue("Expected value type, got LCOMPPAREN instead" in str(exc.exception))
+
+    def test_while_block_param(self):
+        parser = Parser()
+        parser.set_tokens("WHILE x")
+
+        with self.assertRaises(Exception) as exc:
+            parsed = parser._command()
+
+        self.assertTrue("Out" in str(exc.exception))
+
     # ASSIGN tests
     def test_assign_return_type(self):
         parser = Parser()
@@ -241,9 +291,10 @@ BLOCK hi [] {x:1WRITE x}
         BLOCK hi [x] {WRITE x}
                 """)
         capturedOutput = StringIO()  # Make StringIO.
-        sys.stdout = capturedOutput  # Redirect stdout.
+        old_stdout = sys.stdout
+        sys.stdout = capturedOutput
         parsed.eval()  # Call function.
-        sys.stdout = sys.__stdout__  # Reset redirect.
+        sys.stdout = old_stdout  # Reset redirect to original instance
         self.assertEqual(int(capturedOutput.getvalue()), 5, "Should be 5")
 
     def test_blocks_with_var_params(self):
@@ -255,10 +306,12 @@ BLOCK hi [] {x:1WRITE x}
                 """)
 
         capturedOutput = StringIO()  # Make StringIO.
+        old_stdout = sys.stdout
         sys.stdout = capturedOutput  # Redirect stdout.
-        parsed.eval()  # Call function.
-        sys.stdout = sys.__stdout__  # Reset redirect.
+        parsed.eval()
+        sys.stdout = old_stdout  # Reset redirect to original instance
         self.assertEqual(int(capturedOutput.getvalue()), 2, "Should be 2")
+
 
 
 

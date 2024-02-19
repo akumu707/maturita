@@ -63,7 +63,7 @@ class Parser:
                 result["commands"].append(self._command())
         return result
 
-    def _if_block(self):
+    def _cmd_block(self):
         result = []
         if self._expect("{"):
             while not self._accept("}"):
@@ -81,7 +81,9 @@ class Parser:
                     f"instead", None)
             return Command(CommandT.Read, self._object())
         if self._accept("IF"):
-            return Command(CommandT.If, l=self._bool_expression(), r=self._if_block())
+            return Command(CommandT.If, l=self._bool_expression(), r=self._cmd_block())
+        if self._accept("WHILE"):
+            return Command(CommandT.While, l=self._bool_expression(), r=self._cmd_block())
         if self._accept("DO"):
             l = self._get_next_token().value
             if l.isalpha() and not l.isupper():
@@ -136,7 +138,6 @@ class Parser:
                 if len(result) == 1:
                     return result[0][0]
                 return OPchain(result)
-
 
     def _term(self):
         result = []

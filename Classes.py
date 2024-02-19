@@ -100,7 +100,7 @@ class CommandT(Enum):
     Read = 3
     Do = 4
     If = 5
-
+    While = 6
 
 
 class Command:
@@ -123,11 +123,18 @@ class Command:
                 result += f"{p}"
             result += "]"
             return result
-        result = f"IF {self.left} " + "{\n"
-        for command in self.right:
-            result += f"\t{command}"
-        result +="}\n"
-        return result
+        if self.type == CommandT.If:
+            result = f"IF {self.left} " + "{\n"
+            for command in self.right:
+                result += f"\t{command}"
+            result +="}\n"
+            return result
+        if self.type == CommandT.While:
+            result = f"WHILE {self.left} " + "{\n"
+            for command in self.right:
+                result += f"\t{command}"
+            result +="}\n"
+            return result
 
     def eval(self, variable_map):
         if self.type == CommandT.Assign:

@@ -7,7 +7,7 @@ reserved = {
         "DO": "DO",
         "TRUE": "TRUE",
         "FALSE": "FALSE",
-
+        "WHILE": "WHILE"
     }
 
 class Lexer(object):
