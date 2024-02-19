@@ -163,10 +163,18 @@ class Command:
             if type(self.left.eval(variable_map)) == bool:
                 if self.left.eval(variable_map):
                     for command in self.right:
-                        command.eval(variable_map)
+                        variable_map = command.eval(variable_map)
                 return variable_map
             else:
                 raise Exception("IF first parameter is not a Bool expression")
+        if self.type == CommandT.While:
+            if type(self.left.eval(variable_map)) == bool:
+                while self.left.eval(variable_map):
+                    for command in self.right:
+                        variable_map = command.eval(variable_map)
+                return variable_map
+            else:
+                raise Exception("WHILE first parameter is not a Bool expression")
 
 
 class Block:
