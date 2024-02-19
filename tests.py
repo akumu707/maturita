@@ -247,6 +247,30 @@ class ParserTests(unittest.TestCase):
 
         self.assertTrue("Out" in str(exc.exception))
 
+    def test_while_output(self):
+        parser = Parser()
+        parsed = parser.parse("""BLOCK main []{x: 3
+        WHILE x<5 {WRITE 5 x: x+1}}
+                """)
+
+        captured_output = StringIO()  # Make StringIO.
+        old_stdout = sys.stdout
+        sys.stdout = captured_output  # Redirect stdout.
+        parsed.eval()
+        sys.stdout = old_stdout  # Reset redirect to original instance
+        self.assertEqual(captured_output.getvalue(), "5\n5\n", "Should be 5\n5\n")
+
+    def test_while_variable_consistency(self):
+        parser = Parser()
+        parsed = parser.parse("""BLOCK main []{x: 3
+                            WHILE x<5 {WRITE 5 x: x+1 y: 1} WRITE y}
+                                    """)
+
+        with self.assertRaises(Exception) as exc:
+            parsed.eval()
+
+        self.assertTrue("Variable" in str(exc.exception))
+
     # ASSIGN tests
     def test_assign_return_type(self):
         parser = Parser()

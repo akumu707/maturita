@@ -169,10 +169,13 @@ class Command:
                 raise Exception("IF first parameter is not a Bool expression")
         if self.type == CommandT.While:
             if type(self.left.eval(variable_map)) == bool:
+                prev_variable_map = variable_map.copy()
                 while self.left.eval(variable_map):
                     for command in self.right:
                         variable_map = command.eval(variable_map)
-                return variable_map
+                for key in prev_variable_map.keys():
+                    prev_variable_map[key] = variable_map[key]
+                return prev_variable_map
             else:
                 raise Exception("WHILE first parameter is not a Bool expression")
 
