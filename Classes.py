@@ -204,13 +204,16 @@ class Block:
                 var_map[self.params[i].value] = param_values[i]
         return var_map
 
-    def eval(self, variable_map):
-        for command in self.commands:
+    def eval(self, variable_map, index=-1):
+        for i, command in enumerate(self.commands):
+            if i <= index:
+                continue
             result = command.eval(variable_map)
             if type(result) == dict:
                 variable_map = result
             else:
-                return {"block": result[0], "param_values": result[1], "variable_map": variable_map}
+                return {"block": result[0], "param_values": result[1], "variable_map": variable_map,
+                        "to stack": {"index": i, "name": self.name}}
 
 
 class Program:
@@ -224,19 +227,29 @@ class Program:
             result += f"{part}\n"
         return result
 
+    def next_block_handle(self, result, variable_map, stack):
+        while result is not None:
+            if result["block"] in self.parts:
+                variable_map[result["block"]] = self.parts[result["block"]].get_new_variable_map(
+                    result["param_values"], result["variable_map"])
+                stack.append(result["to stack"])
+                result = self.parts[result["block"]].eval(variable_map[result["block"]])
+            else:
+                raise Exception("No block named " + result["block"] + " in code")
+
     def eval(self):
         """Program should start to evaluate the 'main' block and run its commands.
         If there is no 'main' block, throw an error."""
         variable_map = {}
         if "main" in self.parts.keys():
+            stack = []
             variable_map["main"] = {}
             result = self.parts["main"].eval(variable_map["main"])
-            while result is not None:
-                if result["block"] in self.parts:
-                    variable_map[result["block"]] = self.parts[result["block"]].get_new_variable_map(
-                        result["param_values"], result["variable_map"])
-                    result = self.parts[result["block"]].eval(variable_map[result["block"]])
-                else:
-                    raise Exception("No block named "+result+" in code")
+            self.next_block_handle(result, variable_map, stack)
+            while stack:
+                block = stack.pop()
+                result = self.parts[block["name"]].eval(variable_map[block["name"]], block["index"])
+                self.next_block_handle(result, variable_map, stack)
+
         else:
             raise Exception("No 'main' block in code")
