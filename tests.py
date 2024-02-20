@@ -245,30 +245,6 @@ class ParserTests(unittest.TestCase):
 
         self.assertTrue("Out" in str(exc.exception))
 
-    def test_while_output(self):
-        parser = Parser()
-        parsed = parser.parse("""BLOCK main []{x: 3
-        WHILE x<5 {WRITE 5 x: x+1}}
-                """)
-
-        captured_output = StringIO()  # Make StringIO.
-        old_stdout = sys.stdout
-        sys.stdout = captured_output  # Redirect stdout.
-        parsed.eval()
-        sys.stdout = old_stdout  # Reset redirect to original instance
-        self.assertEqual(captured_output.getvalue(), "5\n5\n", "Should be 5\n5\n")
-
-    def test_while_variable_consistency(self):
-        parser = Parser()
-        parsed = parser.parse("""BLOCK main []{x: 3
-                            WHILE x<5 {WRITE 5 x: x+1 y: 1} WRITE y}
-                                    """)
-
-        with self.assertRaises(Exception) as exc:
-            parsed.eval()
-
-        self.assertTrue("Variable" in str(exc.exception))
-
     # ASSIGN tests
     def test_assign_return_type(self):
         parser = Parser()
@@ -294,6 +270,7 @@ class ParserTests(unittest.TestCase):
 
         self.assertTrue(parsed.type is CommandT.Assign)
 
+    # Runtime tests
     def test_unexpected_close_paren(self):
         parser = Parser()
 
@@ -311,11 +288,11 @@ BLOCK hi [] {x:1WRITE x}
         DO hi [5]}
         BLOCK hi [x] {WRITE x}
                 """)
-        captured_output = StringIO()  # Make StringIO.
+        captured_output = StringIO()
         old_stdout = sys.stdout
         sys.stdout = captured_output
-        parsed.eval()  # Call function.
-        sys.stdout = old_stdout  # Reset redirect to original instance
+        parsed.eval()
+        sys.stdout = old_stdout
         self.assertEqual(int(captured_output.getvalue()), 5, "Should be 5")
 
     def test_blocks_with_var_params(self):
@@ -326,12 +303,54 @@ BLOCK hi [] {x:1WRITE x}
         BLOCK hi [x] {WRITE x}
                 """)
 
-        captured_output = StringIO()  # Make StringIO.
+        captured_output = StringIO()
         old_stdout = sys.stdout
-        sys.stdout = captured_output  # Redirect stdout.
+        sys.stdout = captured_output
         parsed.eval()
-        sys.stdout = old_stdout  # Reset redirect to original instance
+        sys.stdout = old_stdout
         self.assertEqual(int(captured_output.getvalue()), 2, "Should be 2")
+
+    def test_while_output(self):
+        parser = Parser()
+        parsed = parser.parse("""BLOCK main []{x: 3
+        WHILE x<5 {WRITE 5 x: x+1}}
+                """)
+
+        captured_output = StringIO()
+        old_stdout = sys.stdout
+        sys.stdout = captured_output
+        parsed.eval()
+        sys.stdout = old_stdout
+        self.assertEqual(captured_output.getvalue(), "5\n5\n", "Should be 5\n5\n")
+
+    def test_while_variable_consistency(self):
+        parser = Parser()
+        parsed = parser.parse("""BLOCK main []{x: 3
+                            WHILE x<5 {WRITE 5 x: x+1 y: 1} WRITE y}
+                                    """)
+
+        with self.assertRaises(Exception) as exc:
+            parsed.eval()
+
+        self.assertTrue("Variable" in str(exc.exception))
+
+    def test_return_after_do(self):
+        parser = Parser()
+        parsed = parser.parse("""BLOCK main []{
+        x: 3
+        DO fn []
+        WRITE x
+        }
+        BLOCK fn []{
+        WRITE 5}
+                """)
+
+        captured_output = StringIO()
+        old_stdout = sys.stdout
+        sys.stdout = captured_output
+        parsed.eval()
+        sys.stdout = old_stdout
+        self.assertEqual(captured_output.getvalue(), "5\n3\n", "Should be 5\n3\n")
 
 
 if __name__ == '__main__':
