@@ -114,34 +114,29 @@ class ParserTests(unittest.TestCase):
     # DO tests
     def test_do_return_type(self):
         parser = Parser()
-        parser.set_tokens("DO x []")
-        parsed = parser._command()
+        parsed = parser.parse("BLOCK x [] {DO x []}")
 
-        self.assertTrue(type(parsed) is Command)
+        self.assertTrue(type(parsed.parts["x"].commands[0]) is Command)
 
     def test_do_type(self):
         parser = Parser()
-        parser.set_tokens("DO x []")
+        parsed = parser.parse("BLOCK x [] {DO x []}")
 
-        parsed = parser._command()
-
-        self.assertTrue(parsed.type is CommandT.Do)
+        self.assertTrue(parsed.parts["x"].commands[0].type is CommandT.Do)
 
     def test_do_params(self):
         parser = Parser()
-        parser.set_tokens("DO x")
 
         with self.assertRaises(Exception) as exc:
-            parser._command()
+            parser.parse("BLOCK x [] {DO x}")
 
-        self.assertTrue("Out" in str(exc.exception))
+        self.assertTrue("Unexpected char }" in str(exc.exception))
 
     def test_do_name_param(self):
         parser = Parser()
-        parser.set_tokens("DO []")
 
         with self.assertRaises(Exception) as exc:
-            parser._command()
+            parser.parse("BLOCK [ [] {DO []}")
 
         self.assertTrue("Expected" in str(exc.exception))
 
@@ -284,9 +279,9 @@ BLOCK hi [] {x:1WRITE x}
 
     def test_blocks_with_params(self):
         parser = Parser()
-        parsed = parser.parse("""BLOCK main [] {
+        parsed = parser.parse("""BLOCK hi [x] {WRITE x}
+        BLOCK main [] {
         DO hi [5]}
-        BLOCK hi [x] {WRITE x}
                 """)
         captured_output = StringIO()
         old_stdout = sys.stdout
@@ -297,10 +292,10 @@ BLOCK hi [] {x:1WRITE x}
 
     def test_blocks_with_var_params(self):
         parser = Parser()
-        parsed = parser.parse("""BLOCK main [] {
+        parsed = parser.parse("""BLOCK hi [x] {WRITE x}
+        BLOCK main [] {
         x : 2
         DO hi [x]}
-        BLOCK hi [x] {WRITE x}
                 """)
 
         captured_output = StringIO()
@@ -336,14 +331,15 @@ BLOCK hi [] {x:1WRITE x}
 
     def test_return_after_do(self):
         parser = Parser()
-        parsed = parser.parse("""BLOCK main []{
+        parsed = parser.parse("""
+        BLOCK fn []{
+        WRITE 5}
+        BLOCK main []{
         x: 3
         DO fn []
         WRITE x
         }
-        BLOCK fn []{
-        WRITE 5}
-                """)
+        """)
 
         captured_output = StringIO()
         old_stdout = sys.stdout

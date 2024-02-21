@@ -10,6 +10,7 @@ class Parser:
         self.lexer.build()
         self.tokens = []
         self.next_token = 0
+        self.known_funcs = {}
 
     def _raise_exception(self, msg, token):
         if token is None:
@@ -50,17 +51,17 @@ class Parser:
         while self.next_token < len(self.tokens):
             if self._expect("BLOCK"):
                 key = self._get_next_token().value
+                params = self._params()
+                self.known_funcs[key] = len(params)
                 block = self._block()
-                program[key] = Block(name=key, commands=block["commands"], params=block["params"])
+                program[key] = Block(name=key, commands=block, params=params)
         return Program(program)
 
     def _block(self):
-        result = {}
-        result["params"] = self._params()
-        result["commands"] = []
+        result = []
         if self._expect("{"):
             while not self._accept("}"):
-                result["commands"].append(self._command())
+                result.append(self._command())
         return result
 
     def _cmd_block(self):
@@ -86,6 +87,8 @@ class Parser:
             return Command(CommandT.While, l=self._bool_expression(), r=self._cmd_block())
         if self._accept("DO"):
             l = self._get_next_token().value
+            if l not in self.known_funcs.keys():
+                self._raise_exception(f"Unknown BLOCK {l}", self.tokens[self.next_token - 1])
             if l.isalpha() and not l.isupper():
                 return Command(CommandT.Do, l=l, r=self._params())
             self._raise_exception(f"Expected BLOCK name, got {l} instead", self.tokens[self.next_token-1])
