@@ -368,7 +368,59 @@ BLOCK hi [] {x:1WRITE x}
         sys.stdout = old_stdout
         self.assertEqual(captured_output.getvalue(), "5\n3\n", "Should be 5\n3\n")
 
+    def test_write_output(self):
+        parser = Parser()
+        parsed = parser.parse("""BLOCK main []{x: 3
+                            WRITE x}
+                                    """)
+        captured_output = StringIO()
+        old_stdout = sys.stdout
+        sys.stdout = captured_output
+        parsed.eval()
+        sys.stdout = old_stdout
+        self.assertEqual(captured_output.getvalue(), "3\n", "Should be 3")
 
+    def test_assign_output(self):
+        parser = Parser()
+        parser.set_tokens("x: 2")
+        parsed = parser._command()
+        var_map = parsed.eval({})
+        self.assertEqual(var_map["x"], 2, "Should be 2")
+
+    def test_if_output(self):
+        parser = Parser()
+        parser.set_tokens("IF TRUE{WRITE 2}")
+        parsed = parser._command()
+        captured_output = StringIO()
+        old_stdout = sys.stdout
+        sys.stdout = captured_output
+        parsed.eval({})
+        sys.stdout = old_stdout
+        self.assertEqual(captured_output.getvalue(), "2\n", "Should be 2")
+
+    def test_expression_output(self):
+        parser = Parser()
+        parser.set_tokens("WRITE 2+5*(6-3)")
+        parsed = parser._command()
+
+        captured_output = StringIO()
+        old_stdout = sys.stdout
+        sys.stdout = captured_output
+        parsed.eval({})
+        sys.stdout = old_stdout
+        self.assertEqual(captured_output.getvalue(), "17\n", "Should be 17")
+
+    def test_write_bool_output(self):
+        parser = Parser()
+        parser.set_tokens("WRITE TRUE")
+        parsed = parser._command()
+
+        captured_output = StringIO()
+        old_stdout = sys.stdout
+        sys.stdout = captured_output
+        parsed.eval({})
+        sys.stdout = old_stdout
+        self.assertEqual(captured_output.getvalue(), "TRUE\n", "Should be TRUE")
 
 
 if __name__ == '__main__':

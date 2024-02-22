@@ -30,6 +30,7 @@ class SimpleObj:
             return variable_map[self.value]
         raise Exception("Variable " + self.value + " not assigned")
 
+
 class OPchain:
 
     def __init__(self, chain):
@@ -39,9 +40,9 @@ class OPchain:
         result = f""
         for var, op in self.chain:
             if op is None:
-                result+=f"{var}"
+                result += f"{var}"
             else:
-                result+=f"{op}({var})"
+                result += f"{op}({var})"
         return result
 
     def eval(self, variable_map):
@@ -144,12 +145,15 @@ class Command:
             variable_map[self.left.value] = self.right.eval(variable_map)
             return variable_map
         if self.type == CommandT.Print:
-            if self.right.type == BasicObjT.Var:
-                print(self.right.eval(variable_map))
-            elif self.right.type == BasicObjT.Int:
-                print(self.right.eval(variable_map))
-            else:
-                raise Exception("Trying to print unprintable object")
+            try:
+                value = self.right.eval(variable_map)
+                if value is True:
+                    value = "TRUE"
+                if value is False:
+                    value = "FALSE"
+                print(value)
+            except:
+                raise Exception(f"Trying to print unprintable object {self.right.eval(variable_map)}")
             return variable_map
         if self.type == CommandT.Read:
             result = input()
@@ -190,7 +194,7 @@ class Block:
         result = f"BLOCK {self.name} ["
         for p in self.params:
             result += f"{p}"
-        result+= "] {\n"
+        result += "] {\n"
         for command in self.commands:
             result += f"\t{command}"
         return result + "}"

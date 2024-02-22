@@ -183,12 +183,3 @@ class Parser:
         if current.value.isalpha() and not current.value.isupper():
             return SimpleObj(BasicObjT.Var, current.value)
         self._raise_exception(f"Expected value type, got {current.type} instead", current)
-
-
-
-if __name__ == '__main__':
-    P = Parser()
-    parsed = P.parse()
-    print(parsed)
-    print("-----------------")
-    parsed.eval()
