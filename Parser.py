@@ -64,13 +64,6 @@ class Parser:
                 result.append(self._command())
         return result
 
-    def _cmd_block(self):
-        result = []
-        if self._expect("{"):
-            while not self._accept("}"):
-                result.append(self._command())
-        return result
-
     def _command(self):
         if self._accept("WRITE"):
             return Command(CommandT.Print, self._bool_expression())
@@ -82,15 +75,19 @@ class Parser:
                     f"instead", None)
             return Command(CommandT.Read, self._object())
         if self._accept("IF"):
-            return Command(CommandT.If, l=self._bool_expression(), r=self._cmd_block())
+            return Command(CommandT.If, l=self._bool_expression(), r=self._block())
         if self._accept("WHILE"):
-            return Command(CommandT.While, l=self._bool_expression(), r=self._cmd_block())
+            return Command(CommandT.While, l=self._bool_expression(), r=self._block())
         if self._accept("DO"):
             l = self._get_next_token().value
             if l not in self.known_funcs.keys():
                 self._raise_exception(f"Unknown BLOCK {l}", self.tokens[self.next_token - 1])
             if l.isalpha() and not l.isupper():
-                return Command(CommandT.Do, l=l, r=self._params())
+                r = self._params()
+                if len(r) != self.known_funcs[l]:
+                    self._raise_exception(f"Expected {self.known_funcs[l]} commands, got {len(r)} instead",
+                                          self.tokens[self.next_token - 1])
+                return Command(CommandT.Do, l=l, r=r)
             self._raise_exception(f"Expected BLOCK name, got {l} instead", self.tokens[self.next_token-1])
         l = self._object()
         if self._expect(":"):

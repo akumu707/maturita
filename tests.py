@@ -140,6 +140,26 @@ class ParserTests(unittest.TestCase):
 
         self.assertTrue("Expected" in str(exc.exception))
 
+    def test_do_func_doesnt_exist(self):
+        parser = Parser()
+
+        with self.assertRaises(Exception) as exc:
+            parser.parse("""BLOCK main []{
+                    DO hi []}
+                                                """)
+
+        self.assertTrue("Unknown BLOCK" in str(exc.exception))
+
+    def test_do_func_diff_param_count(self):
+        parser = Parser()
+
+        with self.assertRaises(Exception) as exc:
+            parser.parse("""BLOCK hi []{
+                    DO hi [x]}
+                    """)
+
+        self.assertTrue("Expected 0 commands" in str(exc.exception))
+
     # IF tests
     def test_if_return_type(self):
         parser = Parser()
@@ -347,6 +367,8 @@ BLOCK hi [] {x:1WRITE x}
         parsed.eval()
         sys.stdout = old_stdout
         self.assertEqual(captured_output.getvalue(), "5\n3\n", "Should be 5\n3\n")
+
+
 
 
 if __name__ == '__main__':
