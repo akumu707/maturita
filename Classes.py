@@ -202,10 +202,7 @@ class Block:
     def get_new_variable_map(self, param_values, variable_map):
         var_map = {}
         for i in range(len(param_values)):
-            if param_values[i].type == BasicObjT.Var:
-                var_map[self.params[i].value] = variable_map[param_values[i].value]
-            else:
-                var_map[self.params[i].value] = param_values[i]
+            var_map[self.params[i].value] = param_values[i]
         return var_map
 
     def eval(self, variable_map, index=-1):
@@ -216,7 +213,10 @@ class Block:
             if type(result) == dict:
                 variable_map = result
             else:
-                return {"block": result[0], "param_values": result[1], "variable_map": variable_map,
+                param_values = []
+                for param in result[1]:
+                    param_values.append(param.eval(variable_map))
+                return {"block": result[0], "param_values": param_values, "variable_map": variable_map,
                         "to stack": {"index": i, "name": self.name}}
 
 

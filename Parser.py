@@ -83,7 +83,7 @@ class Parser:
             if l not in self.known_funcs.keys():
                 self._raise_exception(f"Unknown BLOCK {l}", self.tokens[self.next_token - 1])
             if l.isalpha() and not l.isupper():
-                r = self._params()
+                r = self._params(from_do=True)
                 if len(r) != self.known_funcs[l]:
                     self._raise_exception(f"Expected {self.known_funcs[l]} commands, got {len(r)} instead",
                                           self.tokens[self.next_token - 1])
@@ -94,11 +94,19 @@ class Parser:
             r = self._bool_expression()
             return Command(CommandT.Assign, r, l)
 
-    def _params(self):
+    def _params(self, from_do=False):
         result = []
         if self._expect("["):
             while not self._accept("]"):
-                result.append(self._object())
+                if from_do:
+                    result.append(self._expression())
+                else:
+                    p = self._object()
+                    if p.type == BasicObjT.Var:
+                        result.append(p)
+                    else:
+                        self._raise_exception("When defining blocks, "
+                                              "param names must be written according to variable names syntax", None)
         return result
 
     def _bool_expression(self):

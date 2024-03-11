@@ -422,6 +422,22 @@ BLOCK hi [] {x:1WRITE x}
         sys.stdout = old_stdout
         self.assertEqual(captured_output.getvalue(), "TRUE\n", "Should be TRUE")
 
+    def test_recursion(self):
+        parser = Parser()
+        parsed = parser.parse("""BLOCK recur [x]{
+IF x>0 {
+WRITE x
+DO recur [x-1]}}
+BLOCK main []{
+DO recur [10]}
+                                            """)
+        captured_output = StringIO()
+        old_stdout = sys.stdout
+        sys.stdout = captured_output
+        parsed.eval()
+        sys.stdout = old_stdout
+        self.assertEqual(captured_output.getvalue(), "10\n9\n8\n7\n6\n5\n4\n3\n2\n1\n", "Should be 3")
+
 
 if __name__ == '__main__':
     unittest.main()
