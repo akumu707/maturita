@@ -1,35 +1,6 @@
 from enum import Enum
 from SimpleObjClasses import *
-
-
-class BasicObjT(Enum):
-    Int = 1
-    Var = 2
-    Bool = 3
-    Str = 4
-
-
-class SimpleObj:
-
-    def __init__(self, t, value):
-        self.type = t
-        self.value = value
-
-    def __str__(self):
-        if self.type == BasicObjT.Bool:
-            return "TRUE" if self.value else "FALSE"
-        if self.type == BasicObjT.Str:
-            return f"\"{self.value}\""
-        return str(self.value)
-
-    def eval(self, variable_map):
-        if self.type == BasicObjT.Int:
-            return int(self.value)
-        if self.type == BasicObjT.Bool or self.type == BasicObjT.Str:
-            return self.value
-        if self.value in variable_map.keys():
-            return variable_map[self.value]
-        raise Exception("Variable " + self.value + " not assigned")
+from CommandClasses import *
 
 
 class OPchain:

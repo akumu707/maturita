@@ -66,18 +66,18 @@ class Parser:
 
     def _command(self):
         if self._accept("WRITE"):
-            return Command(CommandT.Print, self._bool_expression())
+            return CommandPrint(self._bool_expression())
         if self._accept("READ"):
             param = self._object()
             if param is None:
                 self._raise_exception(
                     f"Expected SimpleObject type, got {str(None)} "
                     f"instead", None)
-            return Command(CommandT.Read, self._object())
+            return CommandRead(self._object())
         if self._accept("IF"):
-            return Command(CommandT.If, l=self._bool_expression(), r=self._block())
+            return CommandIf(l=self._bool_expression(), r=self._block())
         if self._accept("WHILE"):
-            return Command(CommandT.While, l=self._bool_expression(), r=self._block())
+            return CommandWhile(l=self._bool_expression(), r=self._block())
         if self._accept("DO"):
             l = self._get_next_token().value
             if l not in self.known_funcs.keys():
@@ -87,12 +87,12 @@ class Parser:
                 if len(r) != self.known_funcs[l]:
                     self._raise_exception(f"Expected {self.known_funcs[l]} commands, got {len(r)} instead",
                                           self.tokens[self.next_token - 1])
-                return Command(CommandT.Do, l=l, r=r)
+                return CommandDo(l=l, r=r)
             self._raise_exception(f"Expected BLOCK name, got {l} instead", self.tokens[self.next_token-1])
         l = self._object()
         if self._expect(":"):
             r = self._bool_expression()
-            return Command(CommandT.Assign, r, l)
+            return CommandAssign(r, l)
 
     def _params(self, from_do=False):
         result = []

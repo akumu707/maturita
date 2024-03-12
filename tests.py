@@ -7,9 +7,6 @@ from io import StringIO
 
 
 class ParserTests(unittest.TestCase):
-    def test_sum_tuple(self):
-        self.assertEqual(sum((2, 2, 2)), 6, "Should be 6")
-
     # Program tests
 
     def test_program_return(self):
@@ -66,7 +63,7 @@ class ParserTests(unittest.TestCase):
         parser.set_tokens("WRITE x")
         parsed = parser._command()
 
-        self.assertTrue(type(parsed) is Command)
+        self.assertTrue(isinstance(parsed, CommandPrint))
 
     def test_write_params(self):
         parser = Parser()
@@ -77,14 +74,6 @@ class ParserTests(unittest.TestCase):
 
         self.assertTrue("Expected" in str(exc.exception))
 
-    def test_write_type(self):
-        parser = Parser()
-        parser.set_tokens("WRITE x")
-
-        parsed = parser._command()
-
-        self.assertTrue(parsed.type is CommandT.Print)
-
     # READ tests
 
     def test_read_return_type(self):
@@ -92,7 +81,7 @@ class ParserTests(unittest.TestCase):
         parser.set_tokens("READ x")
         parsed = parser._command()
 
-        self.assertTrue(type(parsed) is Command)
+        self.assertTrue(isinstance(parsed, CommandRead))
 
     def test_read_params(self):
         parser = Parser()
@@ -103,26 +92,12 @@ class ParserTests(unittest.TestCase):
 
         self.assertTrue("Expected" in str(exc.exception))
 
-    def test_read_type(self):
-        parser = Parser()
-        parser.set_tokens("READ x")
-
-        parsed = parser._command()
-
-        self.assertTrue(parsed.type is CommandT.Read)
-
     # DO tests
     def test_do_return_type(self):
         parser = Parser()
         parsed = parser.parse("BLOCK x [] {DO x []}")
 
-        self.assertTrue(type(parsed.parts["x"].commands[0]) is Command)
-
-    def test_do_type(self):
-        parser = Parser()
-        parsed = parser.parse("BLOCK x [] {DO x []}")
-
-        self.assertTrue(parsed.parts["x"].commands[0].type is CommandT.Do)
+        self.assertTrue(isinstance(parsed.parts["x"].commands[0], CommandDo))
 
     def test_do_params(self):
         parser = Parser()
@@ -166,15 +141,7 @@ class ParserTests(unittest.TestCase):
         parser.set_tokens("IF x {}")
         parsed = parser._command()
 
-        self.assertTrue(type(parsed) is Command)
-
-    def test_if_type(self):
-        parser = Parser()
-        parser.set_tokens("IF x {}")
-
-        parsed = parser._command()
-
-        self.assertTrue(parsed.type is CommandT.If)
+        self.assertTrue(isinstance(parsed, CommandIf))
 
     def test_if_block_type(self):
         parser = Parser()
@@ -190,7 +157,7 @@ class ParserTests(unittest.TestCase):
 
         parsed = parser._command()
 
-        self.assertTrue(len(parsed.right) == 1 and type(parsed.right[0]) is Command)
+        self.assertTrue(len(parsed.right) == 1 and isinstance(parsed.right[0], CommandPrint))
 
     def test_if_bool_param(self):
         parser = Parser()
@@ -216,15 +183,7 @@ class ParserTests(unittest.TestCase):
         parser.set_tokens("WHILE x {}")
         parsed = parser._command()
 
-        self.assertTrue(type(parsed) is Command)
-
-    def test_while_type(self):
-        parser = Parser()
-        parser.set_tokens("WHILE x {}")
-
-        parsed = parser._command()
-
-        self.assertTrue(parsed.type is CommandT.While)
+        self.assertTrue(isinstance(parsed, CommandWhile))
 
     def test_while_block_type(self):
         parser = Parser()
@@ -240,7 +199,7 @@ class ParserTests(unittest.TestCase):
 
         parsed = parser._command()
 
-        self.assertTrue(len(parsed.right) == 1 and type(parsed.right[0]) is Command)
+        self.assertTrue(len(parsed.right) == 1 and isinstance(parsed.right[0], CommandPrint))
 
     def test_while_bool_param(self):
         parser = Parser()
@@ -266,7 +225,7 @@ class ParserTests(unittest.TestCase):
         parser.set_tokens("x: x+1")
         parsed = parser._command()
 
-        self.assertTrue(type(parsed) is Command)
+        self.assertTrue(isinstance(parsed, CommandAssign))
 
     def test_assign_params(self):
         parser = Parser()
@@ -276,14 +235,6 @@ class ParserTests(unittest.TestCase):
             parser._command()
 
         self.assertTrue("Expected expression" in str(exc.exception))
-
-    def test_assign_type(self):
-        parser = Parser()
-        parser.set_tokens("x: x+1")
-
-        parsed = parser._command()
-
-        self.assertTrue(parsed.type is CommandT.Assign)
 
     # Runtime tests
     def test_unexpected_close_paren(self):
