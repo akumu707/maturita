@@ -102,7 +102,7 @@ class Parser:
                     result.append(self._expression())
                 else:
                     p = self._object()
-                    if p.type == BasicObjT.Var:
+                    if isinstance(p, SimpleObjVar):
                         result.append(p)
                     else:
                         self._raise_exception("When defining blocks, "
@@ -179,15 +179,15 @@ class Parser:
             while not self._accept("\""):
                 if self.next_token >= len(self.tokens):
                     raise Exception("Missing string indicator")
-                current+=str(self._get_next_token().value)
-            return SimpleObj(BasicObjT.Str, current)
+                current += str(self._get_next_token().value)
+            return SimpleObjStr(current)
         current = self._get_next_token()
         if current.type == "NUMBER":
-            return SimpleObj(BasicObjT.Int, current.value)
+            return SimpleObjInt(current.value)
         if current.type == "TRUE":
-            return SimpleObj(BasicObjT.Bool, True)
+            return SimpleObjBool(True)
         if current.type == "FALSE":
-            return SimpleObj(BasicObjT.Bool, False)
+            return SimpleObjBool(False)
         if current.value.isalpha() and not current.value.isupper():
-            return SimpleObj(BasicObjT.Var, current.value)
+            return SimpleObjVar(current.value)
         self._raise_exception(f"Expected value type, got {current.type} instead", current)
