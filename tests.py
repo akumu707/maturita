@@ -7,6 +7,29 @@ from io import StringIO
 
 
 class ParserTests(unittest.TestCase):
+
+    def string_output_program_test(self, program, expected, line):
+        parser = Parser()
+        parsed = parser.parse(program)
+        self.string_output_test(parsed, expected, line)
+
+    def string_output_token_test(self, token_line, expected, line):
+        parser = Parser()
+        parser.set_tokens(token_line)
+        parsed = parser._command()
+        self.string_output_test(parsed, expected, line, {})
+
+    def string_output_test(self, parsed, expected, line, params=None):
+        captured_output = StringIO()
+        old_stdout = sys.stdout
+        sys.stdout = captured_output
+        if params is not None:
+            parsed.eval(params)
+        else:
+            parsed.eval()
+        sys.stdout = old_stdout
+        self.assertEqual(captured_output.getvalue(), expected, line)
+
     # Program tests
 
     def test_program_return(self):
@@ -249,45 +272,22 @@ BLOCK hi [] {x:1WRITE x}
         self.assertTrue("Expected value " in str(exc.exception))
 
     def test_blocks_with_params(self):
-        parser = Parser()
-        parsed = parser.parse("""BLOCK hi [x] {WRITE x}
+        self.string_output_program_test("""BLOCK hi [x] {WRITE x}
         BLOCK main [] {
         DO hi [5]}
-                """)
-        captured_output = StringIO()
-        old_stdout = sys.stdout
-        sys.stdout = captured_output
-        parsed.eval()
-        sys.stdout = old_stdout
-        self.assertEqual(int(captured_output.getvalue()), 5, "Should be 5")
+                """, "5\n", "Parameters transfer incorrect")
 
     def test_blocks_with_var_params(self):
-        parser = Parser()
-        parsed = parser.parse("""BLOCK hi [x] {WRITE x}
+        self.string_output_program_test("""BLOCK hi [x] {WRITE x}
         BLOCK main [] {
         x : 2
         DO hi [x]}
-                """)
-
-        captured_output = StringIO()
-        old_stdout = sys.stdout
-        sys.stdout = captured_output
-        parsed.eval()
-        sys.stdout = old_stdout
-        self.assertEqual(int(captured_output.getvalue()), 2, "Should be 2")
+                """, "2\n", "Variable evaluation while transfering params incorrect")
 
     def test_while_output(self):
-        parser = Parser()
-        parsed = parser.parse("""BLOCK main []{x: 3
+        self.string_output_program_test("""BLOCK main []{x: 3
         WHILE x<5 {WRITE 5 x: x+1}}
-                """)
-
-        captured_output = StringIO()
-        old_stdout = sys.stdout
-        sys.stdout = captured_output
-        parsed.eval()
-        sys.stdout = old_stdout
-        self.assertEqual(captured_output.getvalue(), "5\n5\n", "Should be 5\n5\n")
+                """, "5\n5\n", "WHILE command not working properly")
 
     def test_while_variable_consistency(self):
         parser = Parser()
@@ -301,8 +301,7 @@ BLOCK hi [] {x:1WRITE x}
         self.assertTrue("Variable" in str(exc.exception))
 
     def test_return_after_do(self):
-        parser = Parser()
-        parsed = parser.parse("""
+        self.string_output_program_test("""
         BLOCK fn []{
         WRITE 5}
         BLOCK main []{
@@ -310,26 +309,11 @@ BLOCK hi [] {x:1WRITE x}
         DO fn []
         WRITE x
         }
-        """)
-
-        captured_output = StringIO()
-        old_stdout = sys.stdout
-        sys.stdout = captured_output
-        parsed.eval()
-        sys.stdout = old_stdout
-        self.assertEqual(captured_output.getvalue(), "5\n3\n", "Should be 5\n3\n")
+        """, "5\n3\n", "BLOCK doesn't return after DO")
 
     def test_write_output(self):
-        parser = Parser()
-        parsed = parser.parse("""BLOCK main []{x: 3
-                            WRITE x}
-                                    """)
-        captured_output = StringIO()
-        old_stdout = sys.stdout
-        sys.stdout = captured_output
-        parsed.eval()
-        sys.stdout = old_stdout
-        self.assertEqual(captured_output.getvalue(), "3\n", "Should be 3")
+        self.string_output_program_test("""BLOCK main []{x: 3
+                            WRITE x}""", "3\n", "Incorrect WRITE output")
 
     def test_assign_output(self):
         parser = Parser()
@@ -339,55 +323,24 @@ BLOCK hi [] {x:1WRITE x}
         self.assertEqual(var_map["x"], 2, "Should be 2")
 
     def test_if_output(self):
-        parser = Parser()
-        parser.set_tokens("IF TRUE{WRITE 2}")
-        parsed = parser._command()
-        captured_output = StringIO()
-        old_stdout = sys.stdout
-        sys.stdout = captured_output
-        parsed.eval({})
-        sys.stdout = old_stdout
-        self.assertEqual(captured_output.getvalue(), "2\n", "Should be 2")
+        self.string_output_token_test("IF TRUE{WRITE 2}", "2\n", "IF command not working properly")
 
     def test_expression_output(self):
-        parser = Parser()
-        parser.set_tokens("WRITE 2+5*(6-3)")
-        parsed = parser._command()
-
-        captured_output = StringIO()
-        old_stdout = sys.stdout
-        sys.stdout = captured_output
-        parsed.eval({})
-        sys.stdout = old_stdout
-        self.assertEqual(captured_output.getvalue(), "17\n", "Should be 17")
+        self.string_output_token_test("WRITE 2+5*(6-3)", "17\n", "Expression evaluated incorrectly")
 
     def test_write_bool_output(self):
-        parser = Parser()
-        parser.set_tokens("WRITE TRUE")
-        parsed = parser._command()
+        self.string_output_token_test("WRITE TRUE", "TRUE\n", "Should be TRUE")
 
-        captured_output = StringIO()
-        old_stdout = sys.stdout
-        sys.stdout = captured_output
-        parsed.eval({})
-        sys.stdout = old_stdout
-        self.assertEqual(captured_output.getvalue(), "TRUE\n", "Should be TRUE")
+    def test_negative_number(self):
+        self.string_output_token_test("WRITE -5", "-5\n", "Parsing of negative number failed")
 
     def test_recursion(self):
-        parser = Parser()
-        parsed = parser.parse("""BLOCK recur [x]{
+        self.string_output_program_test("""BLOCK recur [x]{
 IF x>0 {
 WRITE x
 DO recur [x-1]}}
 BLOCK main []{
-DO recur [10]}
-                                            """)
-        captured_output = StringIO()
-        old_stdout = sys.stdout
-        sys.stdout = captured_output
-        parsed.eval()
-        sys.stdout = old_stdout
-        self.assertEqual(captured_output.getvalue(), "10\n9\n8\n7\n6\n5\n4\n3\n2\n1\n", "Should be 3")
+DO recur [10]}""", "10\n9\n8\n7\n6\n5\n4\n3\n2\n1\n", "Recursion doesn't recursion")
 
 
 if __name__ == '__main__':
