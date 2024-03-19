@@ -181,19 +181,14 @@ class Parser:
                 return exp
         if self.next_token >= len(self.tokens):
             return None
-        if self._accept("\""):
-            current = ""
-            while not self._accept("\""):
-                if self.next_token >= len(self.tokens):
-                    raise Exception("Missing string indicator")
-                current += str(self._get_next_token().value)
-            return SimpleObjStr(current)
         if self._accept("-"):
             current = self._get_next_token()
             if current.type == "NUMBER":
                 return SimpleObjInt(-1*current.value)
             self._raise_exception("Expected number after -", current)
         current = self._get_next_token()
+        if current.type == "STRING":
+            return SimpleObjStr(current.value)
         if current.type == "NUMBER":
             return SimpleObjInt(current.value)
         if current.type == "TRUE":

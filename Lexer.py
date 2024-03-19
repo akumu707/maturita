@@ -10,6 +10,7 @@ reserved = {
         "WHILE": "WHILE"
     }
 
+
 class Lexer(object):
 
     # List of token names.   This is always required
@@ -30,9 +31,13 @@ class Lexer(object):
         "ASSIGN",
         "QUOMARK",
         'LSQPAREN',
-        "RSQPAREN"
+        "RSQPAREN",
+        "STRING"
     ] + list(reserved)
 
+    states = (
+        ('string', 'exclusive'),
+    )
 
     # Regular expression rules for simple tokens
     t_PLUS = r'\+'
@@ -53,6 +58,43 @@ class Lexer(object):
 
     # A regular expression rule with some action code
     # Note addition of self parameter since we're in a class
+    def t_string(self, t):
+        r'\"'
+        t.lexer.code_start = t.lexer.lexpos  # Record the starting position
+        t.lexer.begin('string')
+
+    def t_string_quotation(self, t):
+        r'\"'
+        t.value = t.lexer.lexdata[t.lexer.code_start:t.lexer.lexpos-1]
+        t.type = "STRING"
+        t.lexer.lineno += t.value.count('\n')
+        t.lexer.begin('INITIAL')
+        return t
+
+    # C or C++ comment (ignore)
+    def t_string_comment(self, t):
+        r'(/\*(.|\n)*?\*/)|(//.*)'
+        pass
+
+    # C string
+    def t_string_string(self, t):
+        r'([^\\\n]|(\\.))+?'
+
+    # C character literal
+    def t_string_char(self, t):
+        r'\'([^\\\n]|(\\.))*?\''
+
+    # Any sequence of non-whitespace characters (not braces, strings)
+    def t_string_nonspace(self, t):
+        r'[^\s\{\}\']+'
+
+    # Ignored characters (whitespace)
+    t_string_ignore = "\t\n"
+
+    # For bad characters, we just skip over it
+    def t_string_error(self, t):
+        t.lexer.skip(1)
+
     def t_TEXT(self, t):
         r'[a-zA-Z_][a-zA-Z_0-9]*'
         t.type = reserved.get(t.value, 'TEXT')  # Check for reserved words

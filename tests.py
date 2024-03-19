@@ -345,6 +345,10 @@ DO recur [10]}""", "10\n9\n8\n7\n6\n5\n4\n3\n2\n1\n", "Recursion doesn't recursi
         BLOCK main []{
         x: TRUE IF x{}WRITE x}""", "TRUE\n", "Having no commands for if block doesn't work")
 
+    def test_hello_world(self):
+        self.string_output_program_test("""BLOCK main []{WRITE \"Hello world!\"}""",
+                                        "Hello world!\n", "Having no commands for if block doesn't work")
+
 
 if __name__ == '__main__':
     unittest.main()
