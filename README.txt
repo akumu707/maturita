@@ -1,25 +1,30 @@
-Syntax:
-function:
+EBNF syntax:
+program = {block}, main_block, {block};
 
-BLOCK name [*params] {
-...
-}
+main_block = "BLOCK main", "[", var, { var },"]", "{", command, {command}, "}";
 
-!!!Code must begin with a main BLOCK!!!
+block = "BLOCK", var, "[", var, { var },"]", "{", command, {command}, "}";
 
-Commands
-WRITE x - print
-READ x - input
-DO x [*params] - function call
-IF bool_exp {
-...} - if
-WHILE bool_exp {
-...} - while
-x: exp - assign
+command = "WRITE", bool_expr|"READ", var|var, ":", bool_expr| "DO", var, "[", { var }, "]"| "IF", bool_expr, "{", {command}, "}"| "WHILE", bool_expr, "{", {command}, "}";
 
-!!!Variable names must be lowercase!!!
+bool_expr = expr, { ( '>' | '<'| '=') , expr };
 
-Supported data types
-int
-str - quotation marks as an indicator
-bool - written with caps - TRUE and FALSE
+expr = term, { ( '+' | '-' ) , term };
+
+term = { factor, ( '*' | '/' ) }, factor;
+
+factor = integer | '(', expr, ')'| string|bool|var;
+
+integer = [ '-' ], digit, { digit };
+
+digit = '0' | '1' | '...' | '9';
+
+bool =  TRUE|FALSE;
+
+string =  '"', letter, { letter }, '"';
+
+var = letter, { letter };
+
+string_char = 'A' | 'B' | '...' | 'Z'| digit | letter;
+
+letter = 'a' | 'b' | '...' | 'z';
