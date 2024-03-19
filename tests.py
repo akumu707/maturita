@@ -52,20 +52,20 @@ class ParserTests(unittest.TestCase):
         with self.assertRaises(Exception) as exc:
             parser.parse("BLOCK main {}")
 
-        self.assertTrue("Unexpected char" in str(exc.exception))
+        self.assertTrue("Unexpected char {, expected [ on line: 1 char: 11" in str(exc.exception))
 
     def test_block_name(self):
         parser = Parser()
         with self.assertRaises(Exception) as exc:
             parser.parse("BLOCK [] {}")
 
-        self.assertTrue("Unexpected char" in str(exc.exception))
+        self.assertTrue("Expected value type, got [ instead on line: 1 char: 6" in str(exc.exception))
 
     def test_block_return(self):
         parser = Parser()
         parsed = parser.parse("BLOCK main [] {}")
 
-        self.assertEqual(len(parsed.parts), 1, "Should be 1")
+        self.assertEqual(len(parsed.parts), 1, "Program should contain one BLOCK")
 
     def test_block_return_name(self):
         parser = Parser()
@@ -95,7 +95,7 @@ class ParserTests(unittest.TestCase):
         with self.assertRaises(Exception) as exc:
             parser._command()
 
-        self.assertTrue("Expected" in str(exc.exception))
+        self.assertTrue("Out of bounds on line: 1 char: 5" in str(exc.exception))
 
     # READ tests
 
@@ -113,7 +113,7 @@ class ParserTests(unittest.TestCase):
         with self.assertRaises(Exception) as exc:
             parser._command()
 
-        self.assertTrue("Expected" in str(exc.exception))
+        self.assertTrue("Expected value type, got WRITE instead on line: 1 char: 5" in str(exc.exception))
 
     # DO tests
     def test_do_return_type(self):
@@ -128,35 +128,32 @@ class ParserTests(unittest.TestCase):
         with self.assertRaises(Exception) as exc:
             parser.parse("BLOCK x [] {DO x}")
 
-        self.assertTrue("Unexpected char }" in str(exc.exception))
+        self.assertTrue("Unexpected char }, expected [ on line: 1 char: 16" in str(exc.exception))
 
     def test_do_name_param(self):
         parser = Parser()
 
         with self.assertRaises(Exception) as exc:
-            parser.parse("BLOCK [ [] {DO []}")
+            parser.parse("BLOCK x [] {DO []}")
 
-        self.assertTrue("Expected" in str(exc.exception))
+        self.assertTrue("Expected value type, got [ instead on line: 1 char: 15" in str(exc.exception))
 
     def test_do_func_doesnt_exist(self):
         parser = Parser()
 
         with self.assertRaises(Exception) as exc:
-            parser.parse("""BLOCK main []{
-                    DO hi []}
-                                                """)
+            parser.parse("""BLOCK main []{DO hi []}""")
 
-        self.assertTrue("Unknown BLOCK" in str(exc.exception))
+        self.assertTrue("Unknown BLOCK hi on line: 1 char: 17" in str(exc.exception))
 
     def test_do_func_diff_param_count(self):
         parser = Parser()
 
         with self.assertRaises(Exception) as exc:
-            parser.parse("""BLOCK hi []{
-                    DO hi [x]}
+            parser.parse("""BLOCK hi []{DO hi [x]}
                     """)
 
-        self.assertTrue("Expected 0 commands" in str(exc.exception))
+        self.assertTrue("Expected 0 commands, got 1 instead on line: 1 char: 20" in str(exc.exception))
 
     # IF tests
     def test_if_return_type(self):
@@ -189,7 +186,7 @@ class ParserTests(unittest.TestCase):
         with self.assertRaises(Exception) as exc:
             parser._command()
 
-        self.assertTrue("Expected value type, got LCOMPPAREN instead" in str(exc.exception))
+        self.assertTrue("Expected value type, got { instead on line: 1 char: 3" in str(exc.exception))
 
     def test_if_block_param(self):
         parser = Parser()
@@ -198,7 +195,7 @@ class ParserTests(unittest.TestCase):
         with self.assertRaises(Exception) as exc:
             parser._command()
 
-        self.assertTrue("Out" in str(exc.exception))
+        self.assertTrue("Out of bounds on line: 1 char: 4" in str(exc.exception))
 
     # WHILE tests
     def test_while_return_type(self):
@@ -231,7 +228,7 @@ class ParserTests(unittest.TestCase):
         with self.assertRaises(Exception) as exc:
             parser._command()
 
-        self.assertTrue("Expected value type, got LCOMPPAREN instead" in str(exc.exception))
+        self.assertTrue("Expected value type, got { instead on line: 1 char: 6" in str(exc.exception))
 
     def test_while_block_param(self):
         parser = Parser()
@@ -240,7 +237,7 @@ class ParserTests(unittest.TestCase):
         with self.assertRaises(Exception) as exc:
             parser._command()
 
-        self.assertTrue("Out" in str(exc.exception))
+        self.assertTrue("Out of bounds on line: 1 char: 7" in str(exc.exception))
 
     # ASSIGN tests
     def test_assign_return_type(self):
@@ -257,7 +254,7 @@ class ParserTests(unittest.TestCase):
         with self.assertRaises(Exception) as exc:
             parser._command()
 
-        self.assertTrue("Expected expression" in str(exc.exception))
+        self.assertTrue("Out of bounds on line: 1 char: 2" in str(exc.exception))
 
     # Runtime tests
     def test_unexpected_close_paren(self):
@@ -269,7 +266,7 @@ WRITE x DO hi []}
 BLOCK hi [] {x:1WRITE x}
         """)
 
-        self.assertTrue("Expected value " in str(exc.exception))
+        self.assertTrue("Expected value type, got ) instead on line: 1 char: 24" in str(exc.exception))
 
     def test_blocks_with_params(self):
         self.string_output_program_test("""BLOCK hi [x] {WRITE x}
@@ -298,7 +295,7 @@ BLOCK hi [] {x:1WRITE x}
         with self.assertRaises(Exception) as exc:
             parsed.eval()
 
-        self.assertTrue("Variable" in str(exc.exception))
+        self.assertTrue("Variable y not assigned" in str(exc.exception))
 
     def test_return_after_do(self):
         self.string_output_program_test("""
@@ -320,16 +317,17 @@ BLOCK hi [] {x:1WRITE x}
         parser.set_tokens("x: 2")
         parsed = parser._command()
         var_map = parsed.eval({})
-        self.assertEqual(var_map["x"], 2, "Should be 2")
+        self.assertEqual(var_map["x"], 2, "Incorrect assign")
 
     def test_if_output(self):
         self.string_output_token_test("IF TRUE{WRITE 2}", "2\n", "IF command not working properly")
 
     def test_expression_output(self):
-        self.string_output_token_test("WRITE 2+5*(6-3)", "17\n", "Expression evaluated incorrectly")
+        self.string_output_token_test("WRITE 2+5*(6-3)", "17\n",
+                                      "Expression evaluated incorrectly, possibly failure with parenthees")
 
     def test_write_bool_output(self):
-        self.string_output_token_test("WRITE TRUE", "TRUE\n", "Should be TRUE")
+        self.string_output_token_test("WRITE TRUE", "TRUE\n", "Print output incorrect")
 
     def test_negative_number(self):
         self.string_output_token_test("WRITE -5", "-5\n", "Parsing of negative number failed")
@@ -341,6 +339,11 @@ WRITE x
 DO recur [x-1]}}
 BLOCK main []{
 DO recur [10]}""", "10\n9\n8\n7\n6\n5\n4\n3\n2\n1\n", "Recursion doesn't recursion")
+
+    def test_empty_if(self):
+        self.string_output_program_test("""
+        BLOCK main []{
+        x: TRUE IF x{}WRITE x}""", "TRUE\n", "Having no commands for if block doesn't work")
 
 
 if __name__ == '__main__':

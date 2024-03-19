@@ -1,6 +1,8 @@
 from Classes import *
 from Lexer import Lexer
-import ply.lex as lex
+
+OUT_OF_BOUNDS_MSG = "Out of bounds"
+
 
 class Parser:
 
@@ -12,13 +14,19 @@ class Parser:
         self.next_token = 0
         self.known_funcs = {}
 
-    def _raise_exception(self, msg, token):
+    def _raise_exception(self, msg, token=None):
         if token is None:
-            line_start = self.code.rfind('\n', 0, self.tokens[-1].lexpos) + 1
-            raise Exception(f"{msg} on line: {self.tokens[-1].lineno}  char: "
-                            f"{(self.tokens[-1].lexpos+len(str(self.tokens[-1].value)))+1 - line_start}")
-        line_start = self.code.rfind('\n', 0, token.lexpos) + 1
-        raise Exception(f"{msg} on line: {token.lineno}  char: {token.lexpos - line_start}")
+            line_start = self.code.rfind('\n', 0, self.tokens[self.next_token-1].lexpos) + 1
+            char_index = (self.tokens[self.next_token-1].lexpos+
+                          len(str(self.tokens[self.next_token-1].value))) - line_start
+            line_no = self.tokens[self.next_token-1].lineno
+            if not msg == OUT_OF_BOUNDS_MSG:
+                char_index += 1
+        else:
+            line_start = self.code.rfind('\n', 0, token.lexpos) + 1
+            char_index = token.lexpos - line_start
+            line_no = token.lineno
+        raise Exception(f"{msg} on line: {line_no} char: {char_index}")
 
     def _accept(self, acc):
         if self.next_token >= len(self.tokens):
@@ -30,12 +38,12 @@ class Parser:
 
     def _expect(self, exp):
         if self.next_token >= len(self.tokens):
-            self._raise_exception(f"Out of bounds", None)
+            self._raise_exception(OUT_OF_BOUNDS_MSG, None)
         if self.tokens[self.next_token].value == exp:
             self.next_token += 1
             return True
         self._raise_exception(f"Unexpected char {self.tokens[self.next_token].value}, expected {exp}",
-                              self.tokens[self.next_token-1])
+                              self.tokens[self.next_token])
 
     def _get_next_token(self):
         current = self.tokens[self.next_token]
@@ -50,7 +58,7 @@ class Parser:
         program = {}
         while self.next_token < len(self.tokens):
             if self._expect("BLOCK"):
-                key = self._get_next_token().value
+                key = self._var(self._get_next_token()).value
                 params = self._params()
                 self.known_funcs[key] = len(params)
                 block = self._block()
@@ -79,7 +87,7 @@ class Parser:
         if self._accept("WHILE"):
             return CommandWhile(l=self._bool_expression(), r=self._block())
         if self._accept("DO"):
-            l = self._get_next_token().value
+            l = self._var(self._get_next_token()).value
             if l not in self.known_funcs.keys():
                 self._raise_exception(f"Unknown BLOCK {l}", self.tokens[self.next_token - 1])
             if l.isalpha() and not l.isupper():
@@ -135,8 +143,8 @@ class Parser:
             next_char = self._term()
             if next_char is None:
                 if op is None:
-                    self._raise_exception(f"Expected expression", self.tokens[self.next_token-1])
-                self._raise_exception(f"Expected value or expression after {op}", self.tokens[self.next_token-1])
+                    self._raise_exception(OUT_OF_BOUNDS_MSG)
+                self._raise_exception(f"Expected value or expression after {op}", self.tokens[self.next_token])
             result.append((next_char, op))
             if self._accept("+"):
                 op = "+"
@@ -169,9 +177,8 @@ class Parser:
     def _object(self):
         if self._accept("("):
             exp = self._expression()
-            if self._accept(")"):
+            if self._expect(")"):
                 return exp
-            self._raise_exception(f"Expected )", self.tokens[self.next_token])
         if self.next_token >= len(self.tokens):
             return None
         if self._accept("\""):
@@ -193,6 +200,9 @@ class Parser:
             return SimpleObjBool(True)
         if current.type == "FALSE":
             return SimpleObjBool(False)
+        return self._var(current)
+
+    def _var(self, current):
         if current.value.isalpha() and not current.value.isupper():
             return SimpleObjVar(current.value)
-        self._raise_exception(f"Expected value type, got {current.type} instead", current)
+        self._raise_exception(f"Expected value type, got {current.value} instead", current)
