@@ -83,7 +83,12 @@ class Parser:
                     f"instead", None)
             return CommandRead(self._object())
         if self._accept("IF"):
-            return CommandIf(l=self._bool_expression(), r=self._block())
+            l = self._bool_expression()
+            r = self._block()
+            else_block = None
+            if self._accept("ELSE"):
+                else_block = self._block()
+            return CommandIf(l=l, r=r, else_block=else_block)
         if self._accept("WHILE"):
             return CommandWhile(l=self._bool_expression(), r=self._block())
         if self._accept("DO"):

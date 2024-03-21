@@ -1,7 +1,7 @@
 EBNF syntax:
 program = {block}, main_block, {block};
 
-main_block = "BLOCK main", "[", var, { var },"]", "{", command, {command}, "}";
+main_block = "BLOCK main", "[", "]", "{", command, {command}, "}";
 
 block = "BLOCK", var, "[", var, { var },"]", "{", command, {command}, "}";
 
@@ -28,3 +28,18 @@ var = letter, { letter };
 string_char = 'A' | 'B' | '...' | 'Z'| digit | letter;
 
 letter = 'a' | 'b' | '...' | 'z';
+
+Use examples:
+"Hello world!" print
+
+BLOCK main [] {WRITE "Hello world!"}
+
+BLOCK main [] {
+    WRITE 5 + 3
+}
+
+BLOCK main [] {
+    str : "Hello, "
+    WRITE str + "world!"
+}
+

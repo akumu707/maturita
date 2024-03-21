@@ -67,95 +67,6 @@ class BinOP:
             raise Exception("Type Error: " + str(tperror))
 
 
-class CommandT(Enum):
-    Assign = 1
-    Print = 2
-    Read = 3
-    Do = 4
-    If = 5
-    While = 6
-
-
-class Command:
-
-    def __init__(self, t, r, l=None):
-        self.type = t
-        self.right = r
-        self.left = l  # only useful for the jump command
-
-    def __str__(self):
-        if self.type == CommandT.Assign:
-            return f"{self.left} : {self.right}\n"
-        if self.type == CommandT.Print:
-            return f"WRITE {self.right}\n"
-        if self.type == CommandT.Read:
-            return f"READ {self.right}\n"
-        if self.type == CommandT.Do:
-            result = f"DO {self.left} ["
-            for p in self.right:
-                result += f"{p}"
-            result += "]"
-            return result
-        if self.type == CommandT.If:
-            result = f"IF {self.left} " + "{\n"
-            for command in self.right:
-                result += f"\t{command}"
-            result +="}\n"
-            return result
-        if self.type == CommandT.While:
-            result = f"WHILE {self.left} " + "{\n"
-            for command in self.right:
-                result += f"\t{command}"
-            result +="}\n"
-            return result
-
-    def eval(self, variable_map):
-        if self.type == CommandT.Assign:
-            for char in self.left.value:
-                if not ord(char) >= ord("a") and ord(char) <= ord("z"):
-                    raise Exception("Variable name is not lowercase")
-            variable_map[self.left.value] = self.right.eval(variable_map)
-            return variable_map
-        if self.type == CommandT.Print:
-            try:
-                value = self.right.eval(variable_map)
-                if value is True:
-                    value = "TRUE"
-                if value is False:
-                    value = "FALSE"
-                print(value)
-            except:
-                raise Exception(f"Trying to print unprintable object {self.right.eval(variable_map)}")
-            return variable_map
-        if self.type == CommandT.Read:
-            result = input()
-            if result.isdecimal():
-                variable_map[self.right.value] = int(result)
-                return variable_map
-            raise Exception("Trying to assign string to a variable")
-        if self.type == CommandT.Do:
-            return self.left, self.right
-        if self.type == CommandT.If:
-            if type(self.left.eval(variable_map)) == bool:
-                if self.left.eval(variable_map):
-                    for command in self.right:
-                        variable_map = command.eval(variable_map)
-                return variable_map
-            else:
-                raise Exception("IF first parameter is not a Bool expression")
-        if self.type == CommandT.While:
-            if type(self.left.eval(variable_map)) == bool:
-                prev_variable_map = variable_map.copy()
-                while self.left.eval(variable_map):
-                    for command in self.right:
-                        variable_map = command.eval(variable_map)
-                for key in prev_variable_map.keys():
-                    prev_variable_map[key] = variable_map[key]
-                return prev_variable_map
-            else:
-                raise Exception("WHILE first parameter is not a Bool expression")
-
-
 class Block:
     def __init__(self, name, params, commands):
         self.name = name
@@ -171,7 +82,7 @@ class Block:
             result += f"\t{command}"
         return result + "}"
 
-    def get_new_variable_map(self, param_values, variable_map):
+    def get_new_variable_map(self, param_values):
         var_map = {}
         for i in range(len(param_values)):
             var_map[self.params[i].value] = param_values[i]
@@ -207,7 +118,7 @@ class Program:
         while result is not None:
             if result["block"] in self.parts:
                 variable_map[result["block"]] = self.parts[result["block"]].get_new_variable_map(
-                    result["param_values"], result["variable_map"])
+                    result["param_values"])
                 stack.append(result["to stack"])
                 result = self.parts[result["block"]].eval(variable_map[result["block"]])
             else:

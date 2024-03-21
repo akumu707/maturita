@@ -349,6 +349,13 @@ DO recur [10]}""", "10\n9\n8\n7\n6\n5\n4\n3\n2\n1\n", "Recursion doesn't recursi
         self.string_output_program_test("""BLOCK main []{WRITE \"Hello world!\"}""",
                                         "Hello world!\n", "Having no commands for if block doesn't work")
 
+    def test_use_examples(self):
+        self.string_output_program_test("""BLOCK main [] {
+        IF 10 > 20 {
+            WRITE "a is greater than b"
+        } ELSE {
+            WRITE "a is less than or equal to b"}}""","a is less than or equal to b\n")
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -80,9 +80,10 @@ class CommandDo:
 
 class CommandIf:
 
-    def __init__(self, r, l):
+    def __init__(self, r, l, else_block=None):
         self.right = r
         self.left = l
+        self.else_block = else_block
 
     def __str__(self):
         result = f"IF {self.left} " + "{\n"
@@ -96,6 +97,10 @@ class CommandIf:
             if self.left.eval(variable_map):
                 for command in self.right:
                     variable_map = command.eval(variable_map)
+            else:
+                if self.else_block:
+                    for command in self.else_block:
+                        variable_map = command.eval(variable_map)
             return variable_map
         else:
             raise Exception("IF first parameter is not a Bool expression")
