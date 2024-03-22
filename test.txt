@@ -1,3 +1,0 @@
-BLOCK main []{x : 2*(x+)
-WRITE x DO hi [5] }
-BLOCK hi [a]{x:1WRITE x WRITE a}

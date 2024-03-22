@@ -8,12 +8,12 @@ from io import StringIO
 
 class ParserTests(unittest.TestCase):
 
-    def string_output_program_test(self, program, expected, line):
+    def string_output_program_test(self, program, expected, line=None):
         parser = Parser()
         parsed = parser.parse(program)
         self.string_output_test(parsed, expected, line)
 
-    def string_output_token_test(self, token_line, expected, line):
+    def string_output_token_test(self, token_line, expected, line=None):
         parser = Parser()
         parser.set_tokens(token_line)
         parsed = parser._command()
@@ -349,12 +349,13 @@ DO recur [10]}""", "10\n9\n8\n7\n6\n5\n4\n3\n2\n1\n", "Recursion doesn't recursi
         self.string_output_program_test("""BLOCK main []{WRITE \"Hello world!\"}""",
                                         "Hello world!\n", "Having no commands for if block doesn't work")
 
-    def test_use_examples(self):
+    def test_return(self):
         self.string_output_program_test("""BLOCK main [] {
-        IF 10 > 20 {
+        a: 21
+        IF a > 20 {
             WRITE "a is greater than b"
-        } ELSE {
-            WRITE "a is less than or equal to b"}}""","a is less than or equal to b\n")
+            RETURN}
+        WRITE "a is less than or equal to b"}""","a is greater than b\n")
 
 
 if __name__ == '__main__':

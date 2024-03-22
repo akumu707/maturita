@@ -95,12 +95,14 @@ class Block:
             result = command.eval(variable_map)
             if type(result) == dict:
                 variable_map = result
-            else:
+            elif type(result) == tuple:
                 param_values = []
                 for param in result[1]:
                     param_values.append(param.eval(variable_map))
                 return {"block": result[0], "param_values": param_values, "variable_map": variable_map,
                         "to stack": {"index": i, "name": self.name}}
+            else:
+                return
 
 
 class Program:

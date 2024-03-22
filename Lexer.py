@@ -8,7 +8,8 @@ reserved = {
         "DO": "DO",
         "TRUE": "TRUE",
         "FALSE": "FALSE",
-        "WHILE": "WHILE"
+        "WHILE": "WHILE",
+        "RETURN": "RETURN"
     }
 
 

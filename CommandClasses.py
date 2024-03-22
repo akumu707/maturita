@@ -132,4 +132,16 @@ class CommandWhile:
             raise Exception("WHILE first parameter is not a Bool expression")
 
 
+class CommandReturn:
+
+    def __init__(self):
+        pass
+
+    def __str__(self):
+        return f"RETURN"
+
+    def eval(self, variable_map):
+        return
+
+
 

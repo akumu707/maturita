@@ -102,6 +102,8 @@ class Parser:
                                           self.tokens[self.next_token - 1])
                 return CommandDo(l=l, r=r)
             self._raise_exception(f"Expected BLOCK name, got {l} instead", self.tokens[self.next_token-1])
+        if self._accept("RETURN"):
+            return CommandReturn()
         l = self._object()
         if self._expect(":"):
             r = self._bool_expression()
