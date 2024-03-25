@@ -136,7 +136,7 @@ class ParserTests(unittest.TestCase):
         with self.assertRaises(Exception) as exc:
             parser.parse("BLOCK x [] {DO []}")
 
-        self.assertTrue("Expected value type, got [ instead on line: 1 char: 15" in str(exc.exception))
+        self.assertTrue("Expected BLOCK name, got [ instead on line: 1 char: 15" in str(exc.exception))
 
     def test_do_func_doesnt_exist(self):
         parser = Parser()
@@ -356,6 +356,32 @@ DO recur [10]}""", "10\n9\n8\n7\n6\n5\n4\n3\n2\n1\n", "Recursion doesn't recursi
             WRITE "a is greater than b"
             RETURN}
         WRITE "a is less than or equal to b"}""","a is greater than b\n")
+
+    def test_params_with_numbers(self):
+        self.string_output_program_test("""BLOCK fib_inner[pre2 pre1 i n] {
+    IF i = n {
+        WRITE pre1
+        RETURN
+    }
+    DO fib_inner [pre1 pre2 + pre1 i + 1 n]
+}
+
+BLOCK fib [n]{
+    IF n=1 {
+        WRITE "0"
+        RETURN
+    } ELSE {
+        IF n=2 {
+            WRITE "1"
+            RETURN
+        } ELSE {
+            DO fib_inner[0 1 2 n]
+        }
+    }
+}
+
+BLOCK main [] {
+        DO fib[10]}""", "34\n")
 
 
 if __name__ == '__main__':

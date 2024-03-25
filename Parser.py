@@ -92,16 +92,14 @@ class Parser:
         if self._accept("WHILE"):
             return CommandWhile(l=self._bool_expression(), r=self._block())
         if self._accept("DO"):
-            l = self._var(self._get_next_token()).value
+            l = self._var(self._get_next_token(), from_block=True).value
             if l not in self.known_funcs.keys():
                 self._raise_exception(f"Unknown BLOCK {l}", self.tokens[self.next_token - 1])
-            if l.isalpha() and not l.isupper():
-                r = self._params(from_do=True)
-                if len(r) != self.known_funcs[l]:
-                    self._raise_exception(f"Expected {self.known_funcs[l]} commands, got {len(r)} instead",
-                                          self.tokens[self.next_token - 1])
-                return CommandDo(l=l, r=r)
-            self._raise_exception(f"Expected BLOCK name, got {l} instead", self.tokens[self.next_token-1])
+            r = self._params(from_do=True)
+            if len(r) != self.known_funcs[l]:
+                self._raise_exception(f"Expected {self.known_funcs[l]} commands, got {len(r)} instead",
+                                      self.tokens[self.next_token - 1])
+            return CommandDo(l=l, r=r)
         if self._accept("RETURN"):
             return CommandReturn()
         l = self._object()
@@ -204,7 +202,9 @@ class Parser:
             return SimpleObjBool(False)
         return self._var(current)
 
-    def _var(self, current):
-        if current.value.isalpha() and not current.value.isupper():
+    def _var(self, current, from_block=False):
+        if not current.value.isupper() and current.type == "TEXT":
             return SimpleObjVar(current.value)
+        if from_block:
+            self._raise_exception(f"Expected BLOCK name, got {current.value} instead", current)
         self._raise_exception(f"Expected value type, got {current.value} instead", current)
