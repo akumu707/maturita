@@ -86,9 +86,14 @@ class Parser:
             l = self._bool_expression()
             r = self._block()
             else_block = None
+            elif_blocks = []
+            while self._accept("ELIF"):
+                l_elif = self._bool_expression()
+                r_elif = self._block()
+                elif_blocks.append({"condition": l_elif, "commands": r_elif})
             if self._accept("ELSE"):
                 else_block = self._block()
-            return CommandIf(l=l, r=r, else_block=else_block)
+            return CommandIf(l=l, r=r, else_block=else_block, elif_blocks=elif_blocks)
         if self._accept("WHILE"):
             return CommandWhile(l=self._bool_expression(), r=self._block())
         if self._accept("DO"):

@@ -80,10 +80,11 @@ class CommandDo:
 
 class CommandIf:
 
-    def __init__(self, r, l, else_block=None):
+    def __init__(self, r, l, else_block=None, elif_blocks=None):
         self.right = r
         self.left = l
         self.else_block = else_block
+        self.elif_blocks = elif_blocks
 
     def __str__(self):
         result = f"IF {self.left} " + "{\n"
@@ -98,7 +99,14 @@ class CommandIf:
                 for command in self.right:
                     variable_map = command.eval(variable_map)
             else:
-                if self.else_block:
+                done = False
+                for block in self.elif_blocks:
+                    if block["condition"].eval(variable_map):
+                        for command in block["commands"]:
+                            variable_map = command.eval(variable_map)
+                        done=True
+                        continue
+                if not done and self.else_block:
                     for command in self.else_block:
                         variable_map = command.eval(variable_map)
             return variable_map

@@ -5,6 +5,7 @@ reserved = {
         'WRITE': 'WRITE',
         "IF": "IF",
         "ELSE": "ELSE",
+        "ELIF": "ELIF",
         "DO": "DO",
         "TRUE": "TRUE",
         "FALSE": "FALSE",

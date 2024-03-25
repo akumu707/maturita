@@ -8,12 +8,12 @@ from io import StringIO
 
 class ParserTests(unittest.TestCase):
 
-    def string_output_program_test(self, program, expected, line=None):
+    def assert_program_output(self, program, expected, line=None):
         parser = Parser()
         parsed = parser.parse(program)
         self.string_output_test(parsed, expected, line)
 
-    def string_output_token_test(self, token_line, expected, line=None):
+    def assert_token_output(self, token_line, expected, line=None):
         parser = Parser()
         parser.set_tokens(token_line)
         parsed = parser._command()
@@ -269,20 +269,20 @@ BLOCK hi [] {x:1WRITE x}
         self.assertTrue("Expected value type, got ) instead on line: 1 char: 24" in str(exc.exception))
 
     def test_blocks_with_params(self):
-        self.string_output_program_test("""BLOCK hi [x] {WRITE x}
+        self.assert_program_output("""BLOCK hi [x] {WRITE x}
         BLOCK main [] {
         DO hi [5]}
                 """, "5\n", "Parameters transfer incorrect")
 
     def test_blocks_with_var_params(self):
-        self.string_output_program_test("""BLOCK hi [x] {WRITE x}
+        self.assert_program_output("""BLOCK hi [x] {WRITE x}
         BLOCK main [] {
         x : 2
         DO hi [x]}
                 """, "2\n", "Variable evaluation while transfering params incorrect")
 
     def test_while_output(self):
-        self.string_output_program_test("""BLOCK main []{x: 3
+        self.assert_program_output("""BLOCK main []{x: 3
         WHILE x<5 {WRITE 5 x: x+1}}
                 """, "5\n5\n", "WHILE command not working properly")
 
@@ -298,7 +298,7 @@ BLOCK hi [] {x:1WRITE x}
         self.assertTrue("Variable y not assigned" in str(exc.exception))
 
     def test_return_after_do(self):
-        self.string_output_program_test("""
+        self.assert_program_output("""
         BLOCK fn []{
         WRITE 5}
         BLOCK main []{
@@ -309,7 +309,7 @@ BLOCK hi [] {x:1WRITE x}
         """, "5\n3\n", "BLOCK doesn't return after DO")
 
     def test_write_output(self):
-        self.string_output_program_test("""BLOCK main []{x: 3
+        self.assert_program_output("""BLOCK main []{x: 3
                             WRITE x}""", "3\n", "Incorrect WRITE output")
 
     def test_assign_output(self):
@@ -320,20 +320,20 @@ BLOCK hi [] {x:1WRITE x}
         self.assertEqual(var_map["x"], 2, "Incorrect assign")
 
     def test_if_output(self):
-        self.string_output_token_test("IF TRUE{WRITE 2}", "2\n", "IF command not working properly")
+        self.assert_token_output("IF TRUE{WRITE 2}", "2\n", "IF command not working properly")
 
     def test_expression_output(self):
-        self.string_output_token_test("WRITE 2+5*(6-3)", "17\n",
+        self.assert_token_output("WRITE 2+5*(6-3)", "17\n",
                                       "Expression evaluated incorrectly, possibly failure with parenthees")
 
     def test_write_bool_output(self):
-        self.string_output_token_test("WRITE TRUE", "TRUE\n", "Print output incorrect")
+        self.assert_token_output("WRITE TRUE", "TRUE\n", "Print output incorrect")
 
     def test_negative_number(self):
-        self.string_output_token_test("WRITE -5", "-5\n", "Parsing of negative number failed")
+        self.assert_token_output("WRITE -5", "-5\n", "Parsing of negative number failed")
 
     def test_recursion(self):
-        self.string_output_program_test("""BLOCK recur [x]{
+        self.assert_program_output("""BLOCK recur [x]{
 IF x>0 {
 WRITE x
 DO recur [x-1]}}
@@ -341,16 +341,16 @@ BLOCK main []{
 DO recur [10]}""", "10\n9\n8\n7\n6\n5\n4\n3\n2\n1\n", "Recursion doesn't recursion")
 
     def test_empty_if(self):
-        self.string_output_program_test("""
+        self.assert_program_output("""
         BLOCK main []{
         x: TRUE IF x{}WRITE x}""", "TRUE\n", "Having no commands for if block doesn't work")
 
     def test_hello_world(self):
-        self.string_output_program_test("""BLOCK main []{WRITE \"Hello world!\"}""",
+        self.assert_program_output("""BLOCK main []{WRITE \"Hello world!\"}""",
                                         "Hello world!\n", "Having no commands for if block doesn't work")
 
     def test_return(self):
-        self.string_output_program_test("""BLOCK main [] {
+        self.assert_program_output("""BLOCK main [] {
         a: 21
         IF a > 20 {
             WRITE "a is greater than b"
@@ -358,7 +358,7 @@ DO recur [10]}""", "10\n9\n8\n7\n6\n5\n4\n3\n2\n1\n", "Recursion doesn't recursi
         WRITE "a is less than or equal to b"}""","a is greater than b\n")
 
     def test_params_with_numbers(self):
-        self.string_output_program_test("""BLOCK fib_inner[pre2 pre1 i n] {
+        self.assert_program_output("""BLOCK fib_inner[pre2 pre1 i n] {
     IF i = n {
         WRITE pre1
         RETURN
@@ -382,6 +382,31 @@ BLOCK fib [n]{
 
 BLOCK main [] {
         DO fib[10]}""", "34\n")
+
+    def test_elif(self):
+        self.assert_program_output("""BLOCK fib_inner[pre2 pre1 i n] {
+    IF i = n {
+        WRITE pre1
+        RETURN
+    }
+    DO fib_inner[pre1 pre2 + pre1 i + 1 n]
+}
+
+BLOCK fib [n]{
+    IF n=1 {
+        WRITE 0
+        RETURN
+    } ELIF n=2 {
+        WRITE 1
+        RETURN
+    } ELSE {
+        DO fib_inner[0 1 2 n]
+    }
+}
+
+BLOCK main [] {
+        DO fib[10]
+}""", "34\n")
 
 
 if __name__ == '__main__':
