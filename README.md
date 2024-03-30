@@ -10,9 +10,9 @@ command = "WRITE", bool_expr|"READ", var|var, ":", bool_expr| "DO", var, "[", { 
 
 command_block = "{", {command}, "}";
 
-bool_expr = expr, { ( '>' | '<'| '=') , expr };
+expr = arithm_expr, { ( '>' | '<'| '=') , arithm_expr };
 
-expr = term, { ( '+' | '-' ) , term };
+arithm_expr = term, { ( '+' | '-' ) , term };
 
 term = { factor, ( '*' | '/' ) }, factor;
 
@@ -26,11 +26,14 @@ bool =  TRUE|FALSE;
 
 string =  '"', string_char, { string_char }, '"';
 
-var = letter, { letter|digit|_ };
+var = lower_case_letter, { lower_case_letter|digit|_ };
 
-string_char = 'A' | 'B' | '...' | 'Z'| digit | letter|" ";
+string_char= upper_case_letter| digit | letter|" "| special_nonspace_char;
 
-letter = 'a' | 'b' | '...' | 'z'; 
+upper_case_letter = 'A' | 'B' | '...' | 'Z';
+
+lower_case_letter = 'a' | 'b' | '...' | 'z';
+ 
 
 ![EBNF syntax](ebnf.png)
   

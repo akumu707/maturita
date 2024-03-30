@@ -74,23 +74,6 @@ class Lexer(object):
         t.lexer.begin('INITIAL')
         return t
 
-    # C or C++ comment (ignore)
-    def t_string_comment(self, t):
-        r'(/\*(.|\n)*?\*/)|(//.*)'
-        pass
-
-    # C string
-    def t_string_string(self, t):
-        r'([^\\\n]|(\\.))+?'
-
-    # C character literal
-    def t_string_char(self, t):
-        r'\'([^\\\n]|(\\.))*?\''
-
-    # Any sequence of non-whitespace characters (not braces, strings)
-    def t_string_nonspace(self, t):
-        r'[^\s\{\}\']+'
-
     # Ignored characters (whitespace)
     t_string_ignore = "\t\n"
 
