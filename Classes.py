@@ -76,7 +76,9 @@ class Block:
     def __str__(self):
         result = f"BLOCK {self.name} ["
         for p in self.params:
-            result += f"{p}"
+            result += f"{p} "
+        if self.params:
+            result = result[:-1]
         result += "] {\n"
         for command in self.commands:
             result += f"\t{command}"
