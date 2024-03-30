@@ -116,16 +116,21 @@ class Parser:
     def _params(self, from_do=False):
         result = []
         if self._expect("["):
-            while not self._accept("]"):
-                if from_do:
-                    result.append(self._expression())
-                else:
-                    p = self._object()
-                    if isinstance(p, SimpleObjVar):
-                        result.append(p)
+            if not self._accept("]"):
+                while True:
+                    if from_do:
+                        result.append(self._expression())
                     else:
-                        self._raise_exception("When defining blocks, "
-                                              "param names must be written according to variable names syntax", None)
+                        p = self._object()
+                        if isinstance(p, SimpleObjVar):
+                            result.append(p)
+                        else:
+                            self._raise_exception("When defining blocks, "
+                                                  "param names must be written according to variable names syntax",
+                                                  None)
+                    if not self._accept(","):
+                        self._expect("]")
+                        break
         return result
 
     def _bool_expression(self):

@@ -4,15 +4,17 @@ program = {block}, main_block, {block};
 
 main_block = "BLOCK main", "[","]", command_block;
 
-block = "BLOCK", var, "[", var, { var },"]", command_block;
+block = "BLOCK", var, var_list, command_block;
 
-command = "WRITE", bool_expr|"READ", var|var, ":", bool_expr| "DO", var, "[", { var }, "]"| "IF", bool_expr, command_block,{"ELIF", bool_expr, command_block}, ["ELSE",command_block]| "WHILE", bool_expr, command_block| "RETURN";
+command = "WRITE", bool_expr|"READ", var|var, ":", bool_expr| "DO", var, var_list| "IF", bool_expr, command_block,{"ELIF", bool_expr, command_block}, ["ELSE",command_block]| "WHILE", bool_expr, command_block| "RETURN";
+
+var_list = "[", [var, {",", var } ], "]";
 
 command_block = "{", {command}, "}";
 
-expr = arithm_expr, { ( '>' | '<'| '=') , arithm_expr };
+expr = arithm_expr, {( '>' | '<'| '=') , arithm_expr};
 
-arithm_expr = term, { ( '+' | '-' ) , term };
+arithm_expr = term, {( '+' | '-' ) , term};
 
 term = { factor, ( '*' | '/' ) }, factor;
 

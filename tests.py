@@ -358,12 +358,12 @@ DO recur [10]}""", "10\n9\n8\n7\n6\n5\n4\n3\n2\n1\n", "Recursion doesn't recursi
         WRITE "a is less than or equal to b"}""","a is greater than b\n")
 
     def test_params_with_numbers(self):
-        self.assert_program_output("""BLOCK fib_inner[pre2 pre1 i n] {
+        self.assert_program_output("""BLOCK fib_inner[pre2, pre1, i, n] {
     IF i = n {
         WRITE pre1
         RETURN
     }
-    DO fib_inner [pre1 pre2 + pre1 i + 1 n]
+    DO fib_inner [pre1, pre2 + pre1, i + 1, n]
 }
 
 BLOCK fib [n]{
@@ -375,7 +375,7 @@ BLOCK fib [n]{
             WRITE "1"
             RETURN
         } ELSE {
-            DO fib_inner[0 1 2 n]
+            DO fib_inner[0, 1, 2, n]
         }
     }
 }
@@ -384,12 +384,12 @@ BLOCK main [] {
         DO fib[10]}""", "34\n")
 
     def test_elif(self):
-        self.assert_program_output("""BLOCK fib_inner[pre2 pre1 i n] {
+        self.assert_program_output("""BLOCK fib_inner[pre2, pre1, i, n] {
     IF i = n {
         WRITE pre1
         RETURN
     }
-    DO fib_inner[pre1 pre2 + pre1 i + 1 n]
+    DO fib_inner[pre1, pre2 + pre1, i + 1, n]
 }
 
 BLOCK fib [n]{
@@ -400,7 +400,7 @@ BLOCK fib [n]{
         WRITE 1
         RETURN
     } ELSE {
-        DO fib_inner[0 1 2 n]
+        DO fib_inner[0, 1, 2, n]
     }
 }
 
