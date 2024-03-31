@@ -1,6 +1,5 @@
 from Classes import *
 from Lexer import Lexer
-import sys
 
 OUT_OF_BOUNDS_MSG = "Out of bounds"
 
@@ -220,13 +219,3 @@ class Parser:
             self._raise_exception(f"Expected BLOCK name, got {current.value} instead", current)
         self._raise_exception(f"Expected value type, got {current.value} instead", current)
 
-
-if __name__ == "__main__":
-    code = ""
-    with open(sys.argv[1]) as file:
-        for line in file:
-            code += line
-    parser = Parser()
-    parsed = parser.parse(code)
-    print(parsed)
-    parsed.eval()
