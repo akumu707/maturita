@@ -272,14 +272,14 @@ BLOCK hi [] {x:1WRITE x}
         self.assert_program_output("""BLOCK hi [x] {WRITE x}
         BLOCK main [] {
         DO hi [5]}
-                """, "5\n", "Parameters transfer incorrect")
+                """, "5\n")
 
     def test_blocks_with_var_params(self):
         self.assert_program_output("""BLOCK hi [x] {WRITE x}
         BLOCK main [] {
         x : 2
         DO hi [x]}
-                """, "2\n", "Variable evaluation while transfering params incorrect")
+                """, "2\n", "should write parameter passed to block")
 
     def test_while_output(self):
         self.assert_program_output("""BLOCK main []{x: 3
@@ -323,8 +323,7 @@ BLOCK hi [] {x:1WRITE x}
         self.assert_token_output("IF TRUE{WRITE 2}", "2\n", "IF command not working properly")
 
     def test_expression_output(self):
-        self.assert_token_output("WRITE 2+5*(6-3)", "17\n",
-                                      "Expression evaluated incorrectly, possibly failure with parenthees")
+        self.assert_token_output("WRITE 2+5*(6-3)", "17\n",)
 
     def test_write_bool_output(self):
         self.assert_token_output("WRITE TRUE", "TRUE\n", "Print output incorrect")
@@ -338,16 +337,16 @@ IF x>0 {
 WRITE x
 DO recur [x-1]}}
 BLOCK main []{
-DO recur [10]}""", "10\n9\n8\n7\n6\n5\n4\n3\n2\n1\n", "Recursion doesn't recursion")
+DO recur [10]}""", "10\n9\n8\n7\n6\n5\n4\n3\n2\n1\n")
 
     def test_empty_if(self):
         self.assert_program_output("""
         BLOCK main []{
-        x: TRUE IF x{}WRITE x}""", "TRUE\n", "Having no commands for if block doesn't work")
+        x: TRUE IF x{}WRITE x}""", "TRUE\n")
 
     def test_hello_world(self):
         self.assert_program_output("""BLOCK main []{WRITE \"Hello world!\"}""",
-                                        "Hello world!\n", "Having no commands for if block doesn't work")
+                                   "Hello world!\n")
 
     def test_return(self):
         self.assert_program_output("""BLOCK main [] {
