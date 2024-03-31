@@ -35,7 +35,8 @@ class Lexer(object):
         "QUOMARK",
         'LSQPAREN',
         "RSQPAREN",
-        "STRING"
+        "STRING",
+        "COMMA"
     ] + list(reserved)
 
     states = (
@@ -58,6 +59,7 @@ class Lexer(object):
     t_QUOMARK = r'"'
     t_LSQPAREN = r'\['
     t_RSQPAREN = r'\]'
+    t_COMMA = r','
 
     # A regular expression rule with some action code
     # Note addition of self parameter since we're in a class
